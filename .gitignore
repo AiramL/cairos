@@ -2,6 +2,10 @@
 __pycache__/
 *.py[codz]
 *$py.class
+datasets/
+models/
+figures/
+logs/
 
 # C extensions
 *.so
