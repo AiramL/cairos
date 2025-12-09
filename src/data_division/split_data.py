@@ -87,7 +87,7 @@ def main(dataset_name="CIFAR-10",
                                    download=True, 
                                    transform=transform)
 
-        n_classes = len(torch.unique(dataset.targets))
+        n_classes = len(torch.unique(torch.tensor(dataset.targets)))
 
     elif dataset_name == "MNIST":
 
@@ -96,7 +96,7 @@ def main(dataset_name="CIFAR-10",
                                  download=True, 
                                  transform=transform)
 
-        n_classes = len(torch.unique(dataset.targets))
+        n_classes = len(torch.unique(torch.tensor(dataset.targets)))
 
     elif dataset_name == "FMNIST":
 
@@ -105,7 +105,7 @@ def main(dataset_name="CIFAR-10",
                                         download=True, 
                                         transform=transform)
 
-        n_classes = len(torch.unique(dataset.targets))
+        n_classes = len(torch.unique(torch.tensor(dataset.targets)))
 
     elif dataset_name == "SIGN":
 
@@ -132,6 +132,7 @@ def main(dataset_name="CIFAR-10",
                               transform)
 
     else:
+
         raise ValueError("Dataset not found.")
 
     # group indexes by class

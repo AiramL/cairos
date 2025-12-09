@@ -10,6 +10,9 @@ if [ -z $1 ]; then
 	numClients=20
 	dataset="SIGN"
 	i_epochs="5"
+	numClientsFit=$(($numClients/2))
+	scenario="uniform"
+	execution="1"
 
 else
 	
@@ -21,22 +24,26 @@ else
 	numClients=$6
 	dataset=$7
 	i_epochs=$8
+	numClientsFit=$9
+	scenario=${10}
+	execution=${11}
 
 fi
 
 bs=64
-eps=20
-numClientsFit=$(($numClients/2))
-execution=$9
+eps=50
 
-server_log_path="logs/server/flwr/$server/$dataset/$alpha/$framework/$execution/$i_epochs/$model/"
-server_model_path="models/server/flwr/$server/$dataset/$alpha/$framework/$execution/$i_epochs/$model/"
-time_path_server="results/server/flwr/training/$server/$dataset/$alpha/$framework/$execution/$i_epochs/$model/"
+server_log_path="logs/server/flwr/$server/$dataset/$alpha/$framework/$execution/$i_epochs/$numClientsFit/$scenario/$model/"
+server_model_path="models/server/flwr/$server/$dataset/$alpha/$framework/$execution/$i_epochs/$numClientsFit/$scenario/$model/"
+time_path_server="results/server/flwr/training/$server/$dataset/$alpha/$framework/$execution/$i_epochs/$numClientsFit/$scenario/$model/"
 
 echo "Creating paths"
 mkdir -p $server_log_path
 mkdir -p $server_model_path 
 mkdir -p $time_path_server
+
+epochs_list=$(python -m utils.epochs_distributions $numClients $i_epochs $scenario)
+epochs_array=($epochs_list)
 
 [ ! -d "datasets/$dataset/distributions/nclients_$numClients/alpha_$alpha/"  ] && python src/data_division/split_data.py $numClients $dataset $alpha
 
@@ -47,10 +54,10 @@ if [ $server == "fedavg" ]; then
 	sleep 3
 	python -m src.federated_learning.server.$framework.app -ds=$dataset -ncf=$numClientsFit -nc=$numClients -nor=$eps -sn=$server -smp=$server_model_path -md=$model -slp=$server_log_path -sp=$server_port -tp=$time_path_server -a=$alpha & 
 		
-	clients_result_path="results/clients/flwr/classification/$server/$dataset/$alpha/$framework/$execution/$i_epochs/$model/"
-	clients_log_path="logs/clients/flwr/$server/$dataset/$alpha/$framework/$execution/$i_epochs/$model/"
-	clients_model_path="models/clients/flwr/$server/$dataset/$alpha/$framework/$execution/$i_epochs/$model/"
-	time_path_client="results/clients/flwr/training/$server/$dataset/$alpha/$framework/$execution/$i_epochs/$model/"
+	clients_result_path="results/clients/flwr/classification/$server/$dataset/$alpha/$framework/$execution/$i_epochs/$numClientsFit/$scenario/$model/"
+	clients_log_path="logs/clients/flwr/$server/$dataset/$alpha/$framework/$execution/$i_epochs/$numClientsFit/$scenario/$model/"
+	clients_model_path="models/clients/flwr/$server/$dataset/$alpha/$framework/$execution/$i_epochs/$numClientsFit/$scenario/$model/"
+	time_path_client="results/clients/flwr/training/$server/$dataset/$alpha/$framework/$execution/$i_epochs/$numClientsFit/$scenario/$model/"
 
 	mkdir -p $clients_result_path
 	mkdir -p $clients_result_path/raw
@@ -58,10 +65,10 @@ if [ $server == "fedavg" ]; then
 	mkdir -p $clients_model_path 
 	mkdir -p $time_path_client
 	
-	clients_result_path="results/clients/flwr/classification/$server/$dataset/$alpha/$framework/$execution/$i_epochs/"
-	clients_log_path="logs/clients/flwr/$server/$dataset/$alpha/$framework/$execution/$i_epochs/"
-	clients_model_path="models/clients/flwr/$server/$dataset/$alpha/$framework/$execution/$i_epochs/"
-	time_path_client="results/clients/flwr/training/$server/$dataset/$alpha/$framework/$execution/$i_epochs/"
+	clients_result_path="results/clients/flwr/classification/$server/$dataset/$alpha/$framework/$execution/$i_epochs/$numClientsFit/$scenario/"
+	clients_log_path="logs/clients/flwr/$server/$dataset/$alpha/$framework/$execution/$i_epochs/$numClientsFit/$scenario/"
+	clients_model_path="models/clients/flwr/$server/$dataset/$alpha/$framework/$execution/$i_epochs/$numClientsFit/$scenario/"
+	time_path_client="results/clients/flwr/training/$server/$dataset/$alpha/$framework/$execution/$i_epochs/$numClientsFit/$scenario/"
 		
 	echo "Starting clients fedavg"
 	sleep 10
@@ -70,7 +77,7 @@ if [ $server == "fedavg" ]; then
 	do
 	
 		echo "Waiting client "$i" initialization"
-		python -m src.federated_learning.client.$framework.app -nle=$i_epochs -ds=$dataset -md=$model -nc=$numClients -cid=$i -b=$bs -ncf=$numClientsFit -mp=$clients_model_path -lp=$clients_log_path -rp=$clients_result_path -ctp=$time_path_client -sp=$server_port -a=$alpha >> results/clients/flwr/classification/$server/$dataset/$alpha_dirichlet/$framework/$execution/$model/$i_epochs/raw/"client_""$i" &
+		python -m src.federated_learning.client.$framework.app -nle="${epochs_array[$i]}" -ds=$dataset -md=$model -nc=$numClients -cid=$i -b=$bs -ncf=$numClientsFit -mp=$clients_model_path -lp=$clients_log_path -rp=$clients_result_path -ctp=$time_path_client -sp=$server_port -a=$alpha >> results/clients/flwr/classification/$server/$dataset/$alpha_dirichlet/$framework/$execution/$i_epochs/$numClientsFit/$scenario/$model/raw/"client_""$i" &
 		
 		sleep 1
 
