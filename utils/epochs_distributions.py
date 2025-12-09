@@ -5,8 +5,6 @@ from sys import argv
 def generate_epochs_distributions(n_clients=10,
                                   i_epochs=5,
                                   variance=1,
-                                  min_epochs=1,
-                                  max_epochs=20,
                                   distribution="equal"):
 
     if distribution == "equal":
@@ -15,8 +13,8 @@ def generate_epochs_distributions(n_clients=10,
 
     elif distribution == "uniform":
 
-        return np.random.randint(low=min_epochs, 
-                                 high=max_epochs, 
+        return np.random.randint(low=1, 
+                                 high=i_epochs, 
                                  size=n_clients)
     
     elif distribution == "poison":
