@@ -86,6 +86,7 @@ if aggregation == "fedavg":
     strategy = FedAvg(min_available_clients=num_clients,
                       min_fit_clients=num_clients_fit,
                       fraction_fit=0.1,
+                      timeout=34, # change to the experiments
                       logger=logger,
                       initial_parameters=parameters,
                       time_path=time_path)

@@ -27,6 +27,7 @@ class FedAvg(fl.server.strategy.FedAvg):
     def __init__(self,
                  *args,
                  logger=None,
+                 timeout=10,
                  time_path="",
                  **kwargs):
         
@@ -34,6 +35,7 @@ class FedAvg(fl.server.strategy.FedAvg):
                          **kwargs)
 
         self.logger = logger
+        self.timeout = timeout
 
         self.time_path = time_path
      
@@ -52,14 +54,20 @@ class FedAvg(fl.server.strategy.FedAvg):
         results: List[Tuple[ClientProxy, FitRes]],
         failures: List[Union[Tuple[ClientProxy, FitRes], BaseException]],
     ) -> Tuple[Optional[Parameters], Dict[str, Scalar]]:
-        """Aggregate fit results using weighted average."""
-        if not results:
-            return None, {}
         # Do not aggregate if there are failures and failures are not accepted
         if not self.accept_failures and failures:
             return None, {}
 
         global_agg_start_time = time.time()
+        self.logger.debug(f'number of results before: {len(results)}')
+        for c,r in results:
+            self.logger.debug(f'time: {r.metrics['time']}')
+        results = [(client, fit_res) for client, fit_res in results if fit_res.metrics['time'] <= self.timeout ]
+        self.logger.debug(f'number of results after: {len(results)}')
+
+        """Aggregate fit results using weighted average."""
+        if not results:
+            return None, {}
 
         if self.inplace:
             # Does in-place weighted average of results

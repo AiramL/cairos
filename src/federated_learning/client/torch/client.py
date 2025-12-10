@@ -149,8 +149,10 @@ class FLClient(fl.client.NumPyClient):
         #           ".pth")
         #self.logger.debug(f"GPU: {torch.cuda.current_device()}")
 
+        # making a simple test to the communication time
+        communication_time = 2*self.cid
         # Determine client's computational time 
-        self.training_time = timer() - fit_start
+        self.training_time = timer() - fit_start + communication_time
         
 
         # Calculating the total local training time
@@ -159,7 +161,7 @@ class FLClient(fl.client.NumPyClient):
         
         self.logger.debug(f'sending parameters to server: model_weights, len(train): {self.train_size} mid: {self.mid}')
         
-        return self.get_weights(), len(self.trainloader.dataset), {"mid":self.mid, 'loss':loss, "cid":self.cid}
+        return self.get_weights(), len(self.trainloader.dataset), {"time":self.training_time, 'loss':loss, "cid":self.cid}
 
     def evaluate(self, 
                  parameters, 
