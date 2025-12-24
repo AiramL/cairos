@@ -61,7 +61,7 @@ class FedAvg(fl.server.strategy.FedAvg):
         global_agg_start_time = time.time()
         self.logger.debug(f'number of results before: {len(results)}')
         for c,r in results:
-            self.logger.debug(f'time: {r.metrics['time']}')
+            self.logger.debug(f'time: {r.metrics["time"]}')
         results = [(client, fit_res) for client, fit_res in results if fit_res.metrics['time'] <= self.timeout ]
         self.logger.debug(f'number of results after: {len(results)}')
 

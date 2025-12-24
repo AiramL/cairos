@@ -25,7 +25,7 @@ from architectures.torch.implementation import get_weights
 from utils.torch.load_federated_data import CustomDataset
 from utils.loader import load_config
 
-cfg = load_config('configs/config.yaml')
+cfg = load_config('config/config.yaml')
 
 args = get_args_server()
                                                   # default parameters
@@ -39,12 +39,10 @@ server_log_path = args.server_log_path            # logs/server/flwr/
 server_models_path = args.server_models_path      # models/server/flwr/
 DATASET = args.dataset                            # CIFAR-10
 alpha = args.alpha                                # 1.0
-alpha_kd = args.alpha_kd                          # 0.5
-temperature_kd = args.temperature_kd              # 10.0
-epoch_kd = args.epoch_kd                          # 10
 MODEL = args.model                                # MOBILENET             
 time_path = args.time_path                        # results/server/flwr
 block_activation = args.block_activation          # True
+timeout = args.timeout                            # 120
 
 os.makedirs(server_log_path, 
             exist_ok=True)
@@ -69,27 +67,21 @@ message_length = 800 * 1024 * 1024
 
 # Initialize model parameters
 n_classes = cfg['datasets'][DATASET]['classes']
-input_shape = (32,32,3)
 
-model, _, _, _ = build_model(features_shape=input_shape, 
-                             labels_shape=n_classes,
-                             model_name=MODEL,
-                             lr=1e-3)
+model, _, _, _, _ = build_model(labels_shape=n_classes,
+                                model_name=MODEL)
 
 ndarrays = get_weights(model)
 
 parameters = ndarrays_to_parameters(ndarrays)
 
-
-if aggregation == "fedavg":
-
-    strategy = FedAvg(min_available_clients=num_clients,
-                      min_fit_clients=num_clients_fit,
-                      fraction_fit=0.1,
-                      timeout=34, # change to the experiments
-                      logger=logger,
-                      initial_parameters=parameters,
-                      time_path=time_path)
+strategy = FedAvg(min_available_clients=num_clients,
+                  min_fit_clients=num_clients_fit,
+                  fraction_fit=0.1,
+                  timeout=timeout,
+                  logger=logger,
+                  initial_parameters=parameters,
+                  time_path=time_path)
 
 fl.server.start_server(config=fl.server.ServerConfig(num_rounds=num_rounds),
                        server_address=server_ip+":"+server_port,

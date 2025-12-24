@@ -11,34 +11,41 @@ import torch.nn as nn
 import torch.optim as optim
 import torchvision
 
+from .resnet import ResNet18
+
 from .custom_models import (
         Net,
         resnet10
 )
 
+from .flisbee import FlisbeeNet
+
 from timeit import default_timer as timer
 
-def build_model(features_shape=(32,32,3),
+from utils.torch.utils import allocate_cuda
+
+def build_model(features_shape=None,
                 labels_shape=10,
                 client_id=0,
                 model_name="RESNET18",
-                lr=1e-3):
+                lr=0.1):
 
-    model = criterion = optimizer = device = None
+    model = criterion = optimizer = device = scheduler = None
 
-    device = torch.device(f"cuda:{client_id%2}")
-    
+    device = allocate_cuda()
+     
     if model_name == "RESNET18":
 
-        model = torchvision.models.resnet18(weights=None)
-
-        model.fc = nn.Linear(model.fc.in_features, 
-                             labels_shape) 
+        model = ResNet18(num_classes=labels_shape)
 
         criterion = nn.CrossEntropyLoss()
-
-        optimizer = optim.Adam(model.parameters(), 
-                               lr=lr)
+    
+        optimizer = torch.optim.SGD(model.parameters(), 
+                                    lr=lr,
+                                    momentum=0.9, 
+                                    weight_decay=5e-4)
+   
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
     
     elif model_name == "RESNET34":
 
@@ -49,8 +56,12 @@ def build_model(features_shape=(32,32,3),
 
         criterion = nn.CrossEntropyLoss()
 
-        optimizer = optim.Adam(model.parameters(), 
-                               lr=lr)
+        optimizer = torch.optim.SGD(model.parameters(), 
+                                    lr=lr,
+                                    momentum=0.9, 
+                                    weight_decay=5e-4)
+   
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
         
     elif model_name == "MOBILENETV2":
 
@@ -61,8 +72,12 @@ def build_model(features_shape=(32,32,3),
 
         criterion = nn.CrossEntropyLoss()
 
-        optimizer = optim.Adam(model.parameters(), 
-                               lr=lr)
+        optimizer = torch.optim.SGD(model.parameters(), 
+                                    lr=lr,
+                                    momentum=0.9, 
+                                    weight_decay=5e-4)
+   
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
   
 
     elif model_name == "RESNET10":
@@ -71,8 +86,12 @@ def build_model(features_shape=(32,32,3),
 
         criterion = nn.CrossEntropyLoss()
 
-        optimizer = optim.Adam(model.parameters(), 
-                               lr=lr)
+        optimizer = torch.optim.SGD(model.parameters(), 
+                                    lr=lr,
+                                    momentum=0.9, 
+                                    weight_decay=5e-4)
+   
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
         
 
     elif model_name == "CNN":
@@ -81,15 +100,31 @@ def build_model(features_shape=(32,32,3),
 
         criterion = nn.CrossEntropyLoss()
 
-        optimizer = optim.Adam(model.parameters(), 
-                               lr=lr)
+        optimizer = torch.optim.SGD(model.parameters(), 
+                                    lr=lr,
+                                    momentum=0.9, 
+                                    weight_decay=5e-4)
+   
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
         
+    elif model_name == "FLISBEE":
+
+        model = FlisbeeNet(num_classes=labels_shape)
+
+        criterion = nn.CrossEntropyLoss()
+
+        optimizer = torch.optim.SGD(model.parameters(), 
+                                    lr=lr,
+                                    momentum=0.9, 
+                                    weight_decay=5e-4)
+   
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
 
     else:
         
-        pass
+        raise ValueError('Model not implemented')
         
-    return model, criterion, optimizer, device
+    return model, criterion, optimizer, device, scheduler
 
 
 def mem_usage(msg="",
@@ -99,86 +134,11 @@ def mem_usage(msg="",
     logger.debug(f"[{msg}] Memory: {torch.cuda.memory_allocated(device) / 1024**2:.2f} MB | "
           f"Reserved: {torch.cuda.memory_reserved(device) / 1024**2:.2f} MB")
 
-def train2(model, 
-          n_epochs, 
-          optimizer, 
-          criterion, 
-          device,
-          trainloader,
-          logger):
-    
-    """Train the model on the training set."""
-    mem_usage("Before training", 
-              device,
-              logger)
-    
-    model.to(device)
-    model.train()
-    running_loss = 0.0
-    
-    for epoch in range(n_epochs):
-        mem_usage(f"Epoch {epoch+1}/{n_epochs}", 
-                  device,
-                  logger)
-        logger.debug(f'starting local epoch {epoch} with a data size of {len(trainloader)}')
-
-        for index, data in enumerate(trainloader):
-            
-            if len(data[0]) >= 2:
-
-                mem_usage(f"Batch {index+1}/{len(trainloader)}", 
-                          device,
-                          logger)
-                
-                logger.debug(f'data index: {index}')
-                
-                load_time = timer()
-                images, labels = data
-                logger.debug(f'load time: {timer() - load_time}')
-
-                device_load_time = timer()
-                images, labels = images.to(device), labels.to(device)
-                logger.debug(f'device load time: {timer() - device_load_time}') 
-
-                optimizer.zero_grad()
-
-                mem_usage(f"After loading data", 
-                          device,
-                          logger)
-                
-                forward_time = timer()
-                loss = criterion(model(images), labels)
-                logger.debug(f'forward time: {timer() - forward_time}')
-                
-                backward_time = timer()
-                loss.backward()
-                logger.debug(f'backward time: {timer() - backward_time}')
-                mem_usage(f"After backward pass", 
-                          device,
-                          logger)   
-
-                step_time = timer()
-                optimizer.step()
-                logger.debug(f'step time: {timer() - step_time}')
-                mem_usage(f"After optimizer", 
-                          device,
-                          logger)
-    
-                running_loss += loss.item()
-
-            else:
-
-                logger.debug(f'data batch size less than 2: {len(data[0])}')
-
-    avg_trainloss = running_loss / len(trainloader)
-    
-    return avg_trainloss
-
-
 def train(model, 
           n_epochs, 
           optimizer, 
-          criterion, 
+          criterion,
+          scheduler,
           device,
           trainloader,
           logger):
@@ -192,6 +152,7 @@ def train(model,
     running_loss = 0.0
     
     for epoch in range(n_epochs):
+        
         mem_usage(f"Epoch {epoch+1}/{n_epochs}", 
                   device,
                   logger)
@@ -201,49 +162,24 @@ def train(model,
             
             if len(data[0]) >= 2:
 
-                mem_usage(f"Batch {index+1}/{len(trainloader)}", 
-                          device,
-                          logger)
-                
-                logger.debug(f'data index: {index}')
-                
-                load_time = timer()
                 images, labels = data
-                logger.implementation(f'load time: {timer() - load_time}')
-
-                device_load_time = timer()
                 images, labels = images.to(device), labels.to(device)
-                logger.implementation(f'device load time: {timer() - device_load_time}') 
 
                 optimizer.zero_grad()
 
-                mem_usage(f"After loading data", 
-                          device,
-                          logger)
-                
-                forward_time = timer()
                 loss = criterion(model(images), labels)
-                logger.implementation(f'forward time: {timer() - forward_time}')
                 
-                backward_time = timer()
                 loss.backward()
-                logger.implementation(f'backward time: {timer() - backward_time}')
-                mem_usage(f"After backward pass", 
-                          device,
-                          logger)   
 
-                step_time = timer()
                 optimizer.step()
-                logger.implementation(f'step time: {timer() - step_time}')
-                mem_usage(f"After optimizer", 
-                          device,
-                          logger)
     
                 running_loss += loss.item()
 
             else:
 
                 logger.debug(f'data batch size less than 2: {len(data[0])}')
+    
+    scheduler.step()
 
     avg_trainloss = running_loss / len(trainloader)
     
@@ -286,6 +222,72 @@ def evaluate(model,
               logger)
 
     return correct/total, loss
+
+def train_eval(model, 
+               n_epochs, 
+               optimizer, 
+               criterion,
+               scheduler,
+               device,
+               trainloader,
+               testloader,
+               RESULT_PATH,
+               exec_id,
+               logger):
+    
+    # """Train the model on the training set."""
+    best_acc = 0
+    running_loss = 0.0
+    
+    for epoch in range(n_epochs):
+        
+        model.train()
+        
+        # logger.debug(f'starting local epoch {epoch} with a data size of {len(trainloader)}')
+
+        for index, data in enumerate(trainloader):
+            
+            if len(data[0]) >= 2:
+
+                images, labels = data
+
+                images, labels = images.to(device), labels.to(device)
+
+                optimizer.zero_grad()
+
+                loss = criterion(model(images), labels)
+                
+                loss.backward()
+
+                optimizer.step()
+
+                scheduler.step()
+                
+                running_loss += loss.item()
+        
+        
+        test_acc, loss = evaluate(model,
+                                  device,
+                                  criterion,
+                                  testloader,
+                                  logger)
+
+        print(f'acc : {test_acc}, loss: {loss}, epoch: {epoch}')
+
+        logger.debug(f'accuracy {test_acc}, loss {loss}')
+
+        if test_acc > best_acc:
+            
+            print(f'new best: {test_acc}')
+            best_acc = test_acc
+
+            with open(f"{RESULT_PATH}/{exec_id}", "w") as writer:
+                
+                writer.writelines(f"{test_acc:.9f}\n")
+
+    avg_trainloss = running_loss / len(trainloader)
+    
+    return avg_trainloss
 
 
 def get_weights(model):

@@ -1,0 +1,43 @@
+environment: "cairos"
+
+datasets:
+        CIFAR-10: 
+                classes: 10
+                features: 32,32,3
+        MNIST: 
+                classes: 10
+                features: 32,32,3
+        FMNIST:
+                classes: 10
+                features: 32,32,3
+        SIGN: 
+                classes: 43
+                features: 32,32,3
+simulation:
+        cars: 60
+        mobility:
+                distance:
+                        x: 1000
+                        y: 1000       
+                repetitions: 10
+        communication:
+                repetitions: 30
+        speed:
+                index: 
+                        - 0
+                        - 1
+                        - 2
+                value:
+                        - 3.638889 # 13.1km/h
+                        - 8.333333 # 30 km/h
+                        - 13.88889 # 50 km/h
+        model:
+                size:
+                        - 527
+        federated_learning:
+                server:
+                        epochs: 40
+        base_station:
+                range: 600
+                positions: "communication/base_stations.csv"
+

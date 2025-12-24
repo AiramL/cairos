@@ -204,7 +204,7 @@ class ResNet(nn.Module):
             )
         self.groups = groups
         self.base_width = width_per_group
-        self.conv1 = nn.Conv2d(3, self.inplanes, kernel_size=7, stride=2, padding=3, bias=False)
+        self.conv1 = nn.Conv2d(3, self.inplanes, kernel_size=3, stride=1, padding=1, bias=False)
         self.bn1 = norm_layer(self.inplanes)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
@@ -331,7 +331,7 @@ class Net(nn.Module):
 
         super(Net, self).__init__()
         self.feature1=nn.Sequential(
-        nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False),
+        nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False),
         nn.BatchNorm2d(64),
         nn.ReLU(inplace=True),
         nn.MaxPool2d(kernel_size=3, stride=2, padding=1))#64*16*16
@@ -357,14 +357,23 @@ class Net(nn.Module):
     
 
 def create_model(model_name):
+
     model=None
+    
     if model_name=="resnet18":
+        
         model= resnet18(num_classes=10)
+
     elif model_name=='resnet10':
+    
         model=resnet10(num_classes=10)
+
     elif model_name=="resnet152":
+    
         model= resnet152(num_classes=10)
+
     elif model_name=="cnn":
+    
         model=Net()
 
     return model

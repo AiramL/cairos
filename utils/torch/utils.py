@@ -20,6 +20,12 @@ def get_args_client():
                         type=int, 
                         default=1,
                         help="Client identifier") 
+    
+    parser.add_argument("-eid",
+                        "--exec_id", 
+                        type=int, 
+                        default=0,
+                        help="Execution identifier") 
 
     parser.add_argument("-nle",
                         "--number_of_local_epochs", 
@@ -32,6 +38,31 @@ def get_args_client():
                         type=str, 
                         default="all_in_one", 
                         help="Experimental scenario")
+    
+    parser.add_argument("-ot",
+                        "--original_training", 
+                        type=int, 
+                        default=0, 
+                        help="Experimental scenario")
+    
+    parser.add_argument("-epb",
+                        "--estimation_per_batch", 
+                        type=int, 
+                        default=0, 
+                        help="Estimate delay at each batch or not")
+    
+    parser.add_argument("-mt",
+                        "--max_timeout", 
+                        type=int, 
+                        default=120, 
+                        help="Maximun timeout at round begining")
+    
+    parser.add_argument("-rt",
+                        "--real_timer", 
+                        type=int, 
+                        default=0, 
+                        help="Use real hardware timer")
+
 
     parser.add_argument("-b",
                         "--batch_size", 
@@ -250,24 +281,6 @@ def get_args_server():
                          default=1, 
                          help="Alpha parameter of Dirichlet distribution")
     
-    parser.add_argument("-akd",
-                        "--alpha_kd",
-                         type=float, 
-                         default=0.5, 
-                         help="Alpha parameter of Knowledge Distillation")
-    
-    parser.add_argument("-tkd",
-                        "--temperature_kd",
-                         type=float, 
-                         default=10.0, 
-                         help="Temperature parameter of Knowledge Distillation")
-    
-    parser.add_argument("-ekd",
-                        "--epoch_kd",
-                         type=int, 
-                         default=10, 
-                         help="Epoch parameter of Knowledge Distillation")
-
     parser.add_argument("-smp",
                         "--server_models_path", 
                         type=str, 
@@ -298,6 +311,12 @@ def get_args_server():
                         type=str, 
                         default="uniform_aggregation", 
                         help="Control weights during aggregation and if do aggregation before the distillation phase")
+    
+    parser.add_argument("-to",
+                        "--timeout", 
+                        type=int, 
+                        default=120,
+                        help="Round timeout") 
 
     return parser.parse_args()
 

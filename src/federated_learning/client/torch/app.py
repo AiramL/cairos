@@ -1,4 +1,5 @@
 import os
+import pandas as pd
 import numpy as np
 from time import sleep
 from utils.torch.utils import get_args_client
@@ -26,8 +27,12 @@ MODEL = args.model                                  # MOBILENET
 num_clients = args.num_clients                      # 10
 num_selected_clients = args.num_clients_fit         # 10
 alpha = args.alpha                                  # 1
+exec_id = args.exec_id                              # 0
 strategy = args.strategy                            # fedavg
 scenario = args.scenario                            # all_in_one
+original_training = args.original_training          # False
+max_timeout =  args.max_timeout                     # False
+estimation_per_batch = args.estimation_per_batch    # False
 
 if scenario == "all_in_one":
     
@@ -37,13 +42,17 @@ import torch
 import flwr as fl
 
 from architectures.torch.implementation import build_model
-from utils.torch.load_federated_data import load_data_client
+
+from utils.torch.load_federated_data import (
+        load_data_client,
+        CustomDataset)
+
 from utils.loader import load_config
-from .client import FLClient, CustomDataset
+from .client import FLClient
 
 from utils.torch.utils import create_logger_client
 
-cfg = load_config('configs/config.yaml')
+cfg = load_config('config/config.yaml')
 
 logger = create_logger_client(LOG_PATH+MODEL+'/', 
                               client_id)
@@ -90,9 +99,6 @@ train_dataset = CustomDataset(x_train,
 test_dataset = CustomDataset(x_test, 
                              y_test)
 
-spe = len(x_train)//bs
-features_shape = x_train.shape[1:]
-
 trainloader = torch.utils.data.DataLoader(train_dataset, 
                                           batch_size=bs, 
                                           shuffle=False,
@@ -105,13 +111,17 @@ testloader = torch.utils.data.DataLoader(test_dataset,
                                          num_workers=0,
                                          pin_memory=True)
 
+# load through put dataframe
+df = pd.read_csv(f"data/processed/speed0/{exec_id}.csv") 
+throughput_df = df[df['Node ID'] == client_id]
+
 logger.debug("Building model")
 
 labels = cfg['datasets'][DATASET]['classes']
-model, criterion, optimizer, device = build_model(features_shape=features_shape,
-                                                  labels_shape=labels,
-                                                  model_name=MODEL,
-                                                  lr=1e-3)
+model, criterion, optimizer, device, scheduler = build_model(features_shape=None,
+                                                             labels_shape=labels,
+                                                             model_name=MODEL,
+                                                             lr=0.1)
 
 
 logger.debug("Starting training")
@@ -130,9 +140,14 @@ fl.client.start_client(server_address=f'{SERVER_IP}:{SERVER_PORT}',
                                        logger=logger,
                                        optimizer=optimizer,
                                        criterion=criterion,
+                                       scheduler=scheduler,
                                        trainloader=trainloader,
                                        testloader=testloader,
+                                       throughput=throughput_df,
+                                       max_timeout=max_timeout,
+                                       estimation_per_batch=estimation_per_batch,
+                                       original_training=original_training,
+                                       real_timer=False,
                                        device=device).to_client(),
                                        grpc_max_message_length=message_length)
 
-logger.debug(f"GPU: {torch.cuda.current_device()}")
