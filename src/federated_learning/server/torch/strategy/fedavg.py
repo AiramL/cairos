@@ -47,6 +47,16 @@ class FedAvg(fl.server.strategy.FedAvg):
             line = f'{epoch},{self.global_agg_time}\n'
 
             writer.writelines(line)
+    
+    def save_aggregation(self,
+                         epoch,
+                         clients):
+
+        with open(f"{self.time_path}aggregation.csv", "a") as writer:
+            
+            line = f'{epoch},{clients}\n'
+
+            writer.writelines(line)
 
     def aggregate_fit(
         self,
@@ -59,11 +69,11 @@ class FedAvg(fl.server.strategy.FedAvg):
             return None, {}
 
         global_agg_start_time = time.time()
-        self.logger.debug(f'number of results before: {len(results)}')
         for c,r in results:
             self.logger.debug(f'time: {r.metrics["time"]}')
         results = [(client, fit_res) for client, fit_res in results if fit_res.metrics['time'] <= self.timeout ]
-        self.logger.debug(f'number of results after: {len(results)}')
+        self.save_aggregation(server_round,
+                              len(results))
 
         """Aggregate fit results using weighted average."""
         if not results:

@@ -38,6 +38,6 @@ simulation:
                 server:
                         epochs: 40
         base_station:
-                range: 600
+                range: 3600
                 positions: "communication/base_stations.csv"
 

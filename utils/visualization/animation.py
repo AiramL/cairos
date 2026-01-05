@@ -53,8 +53,8 @@ ani = FuncAnimation(fig,
                     repeat=False,
                     interval=20)
 
-#plt.tight_layout()
-#plt.show()
+plt.tight_layout()
+plt.show()
 
 # Save GIF
 ani.save("figures/animation.gif", writer="pillow", fps=20)

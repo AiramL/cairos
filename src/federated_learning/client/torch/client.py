@@ -82,7 +82,7 @@ class FLClient(fl.client.NumPyClient):
         self.throughput = throughput
 
         # computing parameters
-        self.batch_time = 0.4
+        self.batch_time = 0.047
         self.epoch_time = self.batch_time * len(self.trainloader)/batch_size
 
         # communication parameters
@@ -293,6 +293,7 @@ class FLClient(fl.client.NumPyClient):
                     
                     current_time += self.batch_time
                     delay = self.get_estimated_delay(current_time)
+                    self.logger.debug(f'estimated delay: {delay}')
 
                     if delay * self.error_tolerence + current_time < self.timeout:
                     
@@ -305,6 +306,7 @@ class FLClient(fl.client.NumPyClient):
                 # estimating communication delay for the next epoch
                 current_time += self.epoch_time
                 delay = self.get_estimated_delay(current_time)
+                self.logger.debug(f'estimated delay: {delay}')
 
                 if delay * self.error_tolerance + current_time < self.timeout:
                     
@@ -333,37 +335,40 @@ class FLClient(fl.client.NumPyClient):
         else:
             
             # compute the time to download the model
-            fit_start = self.get_real_delay(current_time)
+            # fit_start = self.get_real_delay(current_time)
+            fit_start = 0 # assuming we only start training when clients received the model
     
-        self.timeout = fit_start + self.max_timeout
+        # calculating the timeout of this epoch
+        self.timeout = self.max_timeout - fit_start 
 
         # update weights 
-        self.logger.debug(f"setting model parameters with {len(parameters)} layers")
         self.set_weights(parameters)
 
         # train model
         self.logger.debug("training model")
-        self.logger.debug(f"GPU: {torch.cuda.current_device()}")
         if self.original_training:
             
             self.logger.debug("training with original FedAvg")
             loss = train(self.model, 
                          self.i_epochs, 
                          self.optimizer, 
-                         self.criterion, 
+                         self.criterion,
+                         self.scheduler,
                          self.device,
                          self.trainloader,
                          self.logger)
 
             current_time = self.i_epochs * self.epoch_time + fit_start
+            self.logger.debug(f'computation time: {current_time}, epoch time: {self.epoch_time}, fit start: {fit_start}')
 
         else:
             
-            self.logger.debug("training with original CAIROS")
+            self.logger.debug("training with CAIROS")
             loss, current_time = self.train_cairos(fit_start)
 
         # Simulate that the client is transmitting the model through the network
         communication_time = self.get_real_delay(current_time)
+        self.logger.debug(f'communication time: {communication_time}')
 
         # Determine client's computational time 
         if self.real_timer:
@@ -378,8 +383,7 @@ class FLClient(fl.client.NumPyClient):
 
             self.training_time = current_time + communication_time
         
-        
-        self.logger.debug(f'sending parameters to server: model_weights, len(train): {self.train_size} mid: {self.mid}')
+        self.logger.debug(f'sending parameters to server: model_weights, len(train): {self.train_size} mid: {self.mid}, training time: {self.training_time}')
         
         return self.get_weights(), len(self.trainloader.dataset), {"time":self.training_time, 'loss':loss, "cid":self.cid}
 
@@ -388,7 +392,6 @@ class FLClient(fl.client.NumPyClient):
                  config):
         
         self.logger.debug(f'evaluating model')  
-        self.logger.debug(f"GPU: {torch.cuda.current_device()}")  
         
         # update weights 
         self.set_weights(parameters)
@@ -399,14 +402,11 @@ class FLClient(fl.client.NumPyClient):
                                   self.criterion,
                                   self.testloader,
                                   self.logger)
-        
-        self.logger.debug(f"GPU: {torch.cuda.current_device()}")
 
 
         ''' Since all clients are selected to evaluate, we guaratee
             that each client knows the current global epoch number,
-            to correctly read the delays' file input ''' 
-        
+            to correctly read the delays' file input '''  
         self.update_global_epoch()
 
         # Calculating the total local training time
@@ -416,7 +416,6 @@ class FLClient(fl.client.NumPyClient):
                 writer.writelines(str(self.global_epoch)+","+str(accuracy)+"\n")
         
         self.logger.debug(f'sending parameters to server: loss {loss}, len(test): {self.test_size} accuracy: {float(accuracy)} mid: {self.mid}')
-        self.logger.debug(f"GPU: {torch.cuda.current_device()}")
 
         return loss, self.test_size, {"accuracy": float(accuracy), "mid":self.mid, "cid":self.cid}
 

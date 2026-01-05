@@ -143,19 +143,11 @@ def train(model,
           trainloader,
           logger):
     
-    """Train the model on the training set."""
-    mem_usage("Before training", 
-              device,
-              logger)
-    
     model.train()
     running_loss = 0.0
     
     for epoch in range(n_epochs):
         
-        mem_usage(f"Epoch {epoch+1}/{n_epochs}", 
-                  device,
-                  logger)
         logger.debug(f'starting local epoch {epoch} with a data size of {len(trainloader)}')
 
         for index, data in enumerate(trainloader):
@@ -199,16 +191,8 @@ def evaluate(model,
 
     with torch.no_grad():
 
-        mem_usage(f"Before loading data", 
-                    device,
-                    logger)
-
         for data in testloader:
             
-            mem_usage(f"During loading data", 
-                    device,
-                    logger)
-
             images, labels = data
             images, labels = images.to(device), labels.to(device)
             outputs = model(images)
@@ -217,10 +201,6 @@ def evaluate(model,
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
     
-    mem_usage(f"After loading data", 
-              device,
-              logger)
-
     return correct/total, loss
 
 def train_eval(model, 
