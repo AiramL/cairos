@@ -36,8 +36,8 @@ simulation:
                         - 527
         federated_learning:
                 server:
-                        epochs: 40
+                        epochs: 50
         base_station:
-                range: 3600
+                range: 1200
                 positions: "communication/base_stations.csv"
 

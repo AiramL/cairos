@@ -8,52 +8,8 @@ import torch.optim as optim
 import torch.utils.data as data
 
 from utils.utils import load_config
-
-def create_dataset(dataset, lookback):
-    """Transform a time series into a prediction dataset
-    
-    Args:
-        dataset: A numpy array of time series, first dimension is the time steps
-        lookback: Size of window for prediction
-    """
-    X, y = [], []
-    for i in range(len(dataset)-lookback):
-        feature = dataset[i:i+lookback]
-        target = dataset[i+1:i+lookback+1]
-        X.append(feature)
-        y.append(target)
-    return torch.tensor(X), torch.tensor(y)
-
-class LSTM(nn.Module):
-    
-    def __init__(self):
-        
-        super().__init__()
-        
-        self.lstm = nn.LSTM(input_size=1, 
-                            hidden_size=50, 
-                            num_layers=1, 
-                            batch_first=True)
-
-        self.linear = nn.Linear(50, 1)
-
-    def forward(self, x):
-        x, _ = self.lstm(x)
-        x = self.linear(x)
-        return x
-
-def load_tp(client_id=1, 
-            data_path="data/processed/speed", 
-            speed=0, 
-            data_file="0.csv"):
-    
-    client_id = 1
-    df = pd.read_csv(f"{data_path}{speed}/{data_file}")
-    dt = df[df['Node ID'] == client_id].reset_index()
-    tpu = dt[['Throughput DL']].values.astype('float32')
-    tpd = dt[['Throughput UL']].values.astype('float32')
-    
-    return tpu, tpd
+from utils.estimator.lstm import LSTM
+from utils.estimator.data import load_tp
 
 
 def train(speed=0, 
@@ -135,6 +91,8 @@ def train(speed=0,
         plt.show()
     
     torch.save(model.state_dict(),f"models/model_10_speed_{speed}.pt")
+
+
 
 if __name__ == "__main__":
    

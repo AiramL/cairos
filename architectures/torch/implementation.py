@@ -173,7 +173,7 @@ def train(model,
     
     scheduler.step()
 
-    avg_trainloss = running_loss / len(trainloader)
+    avg_trainloss = running_loss / len(trainloader.dataset)
     
     return avg_trainloss
 
@@ -265,7 +265,7 @@ def train_eval(model,
                 
                 writer.writelines(f"{test_acc:.9f}\n")
 
-    avg_trainloss = running_loss / len(trainloader)
+    avg_trainloss = running_loss / len(trainloader.dataset)
     
     return avg_trainloss
 

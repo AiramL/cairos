@@ -83,8 +83,8 @@ class FLClient(fl.client.NumPyClient):
 
         # computing parameters
         self.batch_time = 0.047
-        self.epoch_time = self.batch_time * len(self.trainloader)/batch_size
-
+        self.epoch_time = self.batch_time * self.train_size / batch_size
+    
         # communication parameters
         self.estimator = EstimatorLSTM()
         self.window_size = 10
@@ -99,7 +99,7 @@ class FLClient(fl.client.NumPyClient):
                               for p in list(model.parameters()) + list(model.buffers())) / 1024
 
         self.logger.debug(f'starting client with id {self.cid}, mid {self.mid} for model {self.model_name}')
-   
+        self.logger.debug(f'epoch time: {self.epoch_time}, batch size: {batch_size}, batch time : {self.batch_time}, size train: {len(self.trainloader.dataset)}')
     
     def update_past_delays(self,
                            state):
@@ -125,7 +125,6 @@ class FLClient(fl.client.NumPyClient):
         return int(time/self.message_period)
 
 
-    # TODO: test new function
     def send_real_data_chunk(self, 
                              data,
                              state): 
@@ -148,7 +147,6 @@ class FLClient(fl.client.NumPyClient):
 
         return data - maximum_chunk_size, time_last_chunk
 
-    # TODO: test new function
     def send_estimated_data_chunk(self, 
                                   data): 
 
@@ -197,7 +195,6 @@ class FLClient(fl.client.NumPyClient):
 
     
     # estimate the delay 
-    # TODO: test new function
     def get_estimated_delay(self,
                             time):
 
@@ -295,7 +292,7 @@ class FLClient(fl.client.NumPyClient):
                     delay = self.get_estimated_delay(current_time)
                     self.logger.debug(f'estimated delay: {delay}')
 
-                    if delay * self.error_tolerence + current_time < self.timeout:
+                    if delay * self.error_tolerance + current_time < self.timeout:
                     
                         current_time -= self.batch_time
 
@@ -316,7 +313,7 @@ class FLClient(fl.client.NumPyClient):
 
         self.scheduler.step()
         
-        avg_trainloss = running_loss / len(self.trainloader)
+        avg_trainloss = running_loss / self.train_size
         
         return avg_trainloss, current_time
 
