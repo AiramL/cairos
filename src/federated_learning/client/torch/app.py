@@ -33,7 +33,7 @@ scenario = args.scenario                            # all_in_one
 original_training = args.original_training          # False
 max_timeout =  args.max_timeout                     # False
 #estimation_per_batch = args.estimation_per_batch    # False
-estimation_per_batch = True
+estimation_per_batch = False
 
 if scenario == "all_in_one":
     

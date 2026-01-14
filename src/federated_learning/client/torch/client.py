@@ -55,7 +55,7 @@ class FLClient(fl.client.NumPyClient):
         self.result_path = result_path+model_name+'/'
         self.time_path = computation_time_path+model_name+'/'
         self.logger = logger
-        self.global_epoch = 1
+        self.global_epoch = 0
         self.real_timer = real_timer
 
         # identifiers
@@ -94,7 +94,8 @@ class FLClient(fl.client.NumPyClient):
         self.timeout = 0
         self.max_timeout = max_timeout
         self.estimation_per_batch = estimation_per_batch
-        self.past_delays = deque(self.window_size*[10])     # starting the past delays with a fixed value
+        self.past_delays = deque(self.window_size*[10],     # starting the past delays with a fixed value
+                                 maxlen=10)                 # fixing the size of our deque
         self.model_size = sum(p.numel() * p.element_size()
                               for p in list(model.parameters()) + list(model.buffers())) / 1024
 
@@ -205,7 +206,7 @@ class FLClient(fl.client.NumPyClient):
 
         while (remaining_data):
             
-            self.logger.debug(f"remaining data: {remaining_data}, state: {state}")
+            self.logger.debug(f"remaining data: {remaining_data}")
             remaining_data, time_last_chunk = self.send_estimated_data_chunk(remaining_data)
             
             if remaining_data:
@@ -258,13 +259,13 @@ class FLClient(fl.client.NumPyClient):
         running_loss = 0.0
         stop = False
         
-        for epoch in range(self.i_epochs):
+        for _ in range(self.i_epochs):
             
             if stop:
 
                 break
 
-            for index, data in enumerate(self.trainloader):
+            for data in self.trainloader:
 
                 if len(data[0]) >= 2:
 
@@ -285,14 +286,22 @@ class FLClient(fl.client.NumPyClient):
 
                     self.logger.debug(f'data batch size less than 2: {len(data[0])}')
 
+                current_time += self.batch_time
+                self.logger.debug(f'new current time: {current_time}')
+                self.logger.debug(f'previous delays: {self.past_delays}')
+                state = self.time_to_state(current_time)
+                self.logger.debug(f'new state: {state}')
+                self.update_past_delays(state)
+                self.logger.debug(f'updated delays: {self.past_delays}')
+
                 # estimating communication delay for the next batch
                 if self.estimation_per_batch:
                     
                     current_time += self.batch_time
                     delay = self.get_estimated_delay(current_time)
-                    self.logger.debug(f'estimated delay: {delay}')
+                    self.logger.debug(f'estimated delay per batch: {delay}')
 
-                    if delay * self.error_tolerance + current_time < self.timeout:
+                    if delay * self.error_tolerance + current_time > self.timeout:
                     
                         current_time -= self.batch_time
 
@@ -303,9 +312,9 @@ class FLClient(fl.client.NumPyClient):
                 # estimating communication delay for the next epoch
                 current_time += self.epoch_time
                 delay = self.get_estimated_delay(current_time)
-                self.logger.debug(f'estimated delay: {delay}')
+                self.logger.debug(f'estimated delay per epoch: {delay}')
 
-                if delay * self.error_tolerance + current_time < self.timeout:
+                if delay * self.error_tolerance + current_time > self.timeout:
                     
                     current_time -= self.epoch_time
 

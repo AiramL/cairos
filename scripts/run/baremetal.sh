@@ -87,7 +87,7 @@ if [ $server == "fedavg" ]; then
 
 	done
 
-elif [ $server == "cairos" ]; then
+elif [ $server == "cairos_pe" ]; then
 	
 	sleep 3
 	python -m src.federated_learning.server.$framework.app -to=$timeout -ds=$dataset -ncf=$numClientsFit -nc=$numClients -nor=$eps -sn=$server -smp=$server_model_path -md=$model -slp=$server_log_path -sp=$server_port -tp=$time_path_server -a=$alpha & 
@@ -115,11 +115,46 @@ elif [ $server == "cairos" ]; then
 	do
 	
 		echo "Waiting client "$i" initialization"
-		python -m src.federated_learning.client.$framework.app -ot=0 -eid=0 -mt=$timeout -nle="${epochs_array[$i]}" -ds=$dataset -md=$model -nc=$numClients -cid=$i -b=$bs -ncf=$numClientsFit -mp=$clients_model_path -lp=$clients_log_path -rp=$clients_result_path -ctp=$time_path_client -sp=$server_port -a=$alpha >> $clients_result_path$model"/raw/client_$i" &
+		python -m src.federated_learning.client.$framework.app -epb=0 -ot=0 -eid=0 -mt=$timeout -nle="${epochs_array[$i]}" -ds=$dataset -md=$model -nc=$numClients -cid=$i -b=$bs -ncf=$numClientsFit -mp=$clients_model_path -lp=$clients_log_path -rp=$clients_result_path -ctp=$time_path_client -sp=$server_port -a=$alpha >> $clients_result_path$model"/raw/client_$i" &
 		
 		sleep 1
 
 	done
+
+elif [ $server == "cairos_pb" ]; then
+	
+	sleep 3
+	python -m src.federated_learning.server.$framework.app -to=$timeout -ds=$dataset -ncf=$numClientsFit -nc=$numClients -nor=$eps -sn=$server -smp=$server_model_path -md=$model -slp=$server_log_path -sp=$server_port -tp=$time_path_server -a=$alpha & 
+		
+	clients_result_path="results/clients/flwr/classification/$server/$dataset/$alpha/$framework/$execution/$i_epochs/$numClientsFit/$scenario/$model/"
+	clients_log_path="logs/clients/flwr/$server/$dataset/$alpha/$framework/$execution/$i_epochs/$numClientsFit/$scenario/$model/"
+	clients_model_path="models/clients/flwr/$server/$dataset/$alpha/$framework/$execution/$i_epochs/$numClientsFit/$scenario/$model/"
+	time_path_client="results/clients/flwr/training/$server/$dataset/$alpha/$framework/$execution/$i_epochs/$numClientsFit/$scenario/$model/"
+
+	mkdir -p $clients_result_path
+	mkdir -p $clients_result_path/raw
+	mkdir -p $clients_log_path
+	mkdir -p $clients_model_path 
+	mkdir -p $time_path_client
+	
+	clients_result_path="results/clients/flwr/classification/$server/$dataset/$alpha/$framework/$execution/$i_epochs/$numClientsFit/$scenario/"
+	clients_log_path="logs/clients/flwr/$server/$dataset/$alpha/$framework/$execution/$i_epochs/$numClientsFit/$scenario/"
+	clients_model_path="models/clients/flwr/$server/$dataset/$alpha/$framework/$execution/$i_epochs/$numClientsFit/$scenario/"
+	time_path_client="results/clients/flwr/training/$server/$dataset/$alpha/$framework/$execution/$i_epochs/$numClientsFit/$scenario/"
+		
+	echo "Starting clients fedavg"
+	sleep 10
+	
+	for i in $(seq 0 $(($numClients-1)))
+	do
+	
+		echo "Waiting client "$i" initialization"
+		python -m src.federated_learning.client.$framework.app -epb=1 -ot=0 -eid=0 -mt=$timeout -nle="${epochs_array[$i]}" -ds=$dataset -md=$model -nc=$numClients -cid=$i -b=$bs -ncf=$numClientsFit -mp=$clients_model_path -lp=$clients_log_path -rp=$clients_result_path -ctp=$time_path_client -sp=$server_port -a=$alpha >> $clients_result_path$model"/raw/client_$i" &
+		
+		sleep 1
+
+	done
+
 
 
 fi
