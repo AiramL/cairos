@@ -14,29 +14,22 @@ datasets:
                 classes: 43
                 features: 32,32,3
 simulation:
-        cars: 60
+        cars: 5
         mobility:
                 distance:
                         x: 1000
                         y: 1000       
-                repetitions: 10
+                repetitions: 3
         communication:
-                repetitions: 30
+                repetitions: 10
         speed:
                 index: 
                         - 0
-                        - 1
-                        - 2
                 value:
-                        - 3.638889 # 13.1km/h
-                        - 8.333333 # 30 km/h
                         - 13.88889 # 50 km/h
-        model:
-                size:
-                        - 527
         federated_learning:
                 server:
-                        epochs: 50
+                        epochs: 10
         base_station:
                 range: 1200
                 positions: "communication/base_stations.csv"

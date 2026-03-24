@@ -13,8 +13,8 @@ NB_Cars=($(yq '.simulation.cars' config/config.yaml))
 NB_Runs=($sequence)
 NB_grid=2 ### for value of x grids will be x-1
 carFM=Krauss ### Krauss, IDM, ACC
-grid_size_x=$(yq .'simulation.mobility.distance.x' config/config.yaml )
-grid_size_y=$(yq .'simulation.mobility.distance.y' config/config.yaml )
+grid_size_x=$(yq '.simulation.mobility.distance.x' config/config.yaml )
+grid_size_y=$(yq '.simulation.mobility.distance.y' config/config.yaml )
 
 ##m/sec 
 declare -A speeds
