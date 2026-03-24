@@ -1,11 +1,234 @@
 # CAIROS: Controle Adaptativo do aprendIzado fedeRadO em redes Sem fio
 
-This code was prepared for SBRC2026
+Vehicular Federated Learning (VFL) is applied to the training of AI models to ensure user data privacy. However, clients exhibit greater variation in the communication channel than in static scenarios due to high client mobility, exceeding the round response timeout. This reduces system performance, as updates from straggler clients are discarded if they exceed the transmission timeout for the round. This work proposes CAIROS, a strategy for model training in vehicular learning that allows each client to estimate its network and computing conditions through an LSTM model. Based on this estimate, the client decides whether to continue training or to send the calculated parameters early to avoid a timeout. The results show that CAIROS, compared to FedAvg, reduces the incidence of discarded updates due to timer expiration in VFL by up to 38%, increasing the accuracy of the trained models by up to 25%.
 
-# Mobility and Communication Models
+# README Structure
 
-Both model were adapted from [ https://github.com/AiramL/TimeOptimizedFederatedLearning TOFL ]. Referer to it to get more details about the models used.
+[Organization](#organization)
+[]()
+[]()
+[]()
 
-# Code Structure
+# Organization
+
+Our code has the following structure when cloned from GitHub:
+
+```
+├── architectures
+│   └── torch
+│       ├── custom_models.py
+│       ├── flisbee.py
+│       ├── implementation.py
+│       └── resnet.py
+├── config
+│   └── config.yaml
+├── generate_figures
+│   ├── accuracy.py
+│   └── efficiency.py
+├── LICENSE
+├── README.md
+├── requirements.txt
+├── scripts
+│   ├── build
+│   │   ├── data.sh
+│   │   ├── dependencies.sh
+│   │   ├── env.sh
+│   │   └── paths.sh
+│   ├── run
+│   │   ├── baremetal.sh
+│   │   ├── client.sh
+│   │   ├── docker.sh
+│   │   ├── experiments.sh
+│   │   ├── jupyter.sh
+│   │   ├── processed
+│   │   │   ├── accuracy.sh
+│   │   │   ├── communication.sh
+│   │   │   ├── mobility.sh
+│   │   │   └── results.sh
+│   │   ├── raw
+│   │   │   ├── accuracy.sh
+│   │   │   ├── all_accuracy.sh
+│   │   │   ├── communication.sh
+│   │   │   └── mobility.sh
+│   │   ├── server.sh
+│   │   ├── test.sh
+│   │   └── train_estimator.sh
+│   ├── stop
+│   │   ├── docker.sh
+│   │   ├── flwr.sh
+│   │   └── torch
+│   │       └── clean.sh
+│   └── visualize
+│       ├── accuracy.sh
+│       ├── animation.sh
+│       ├── communication.sh
+│       ├── energy.sh
+│       ├── mobility.sh
+│       └── time2acc.sh
+├── src
+│   ├── data_division
+│   │   └── split_data.py
+│   └── federated_learning
+│       ├── client
+│       │   └── torch
+│       │       ├── all_clients.py
+│       │       ├── app.py
+│       │       ├── client.py
+│       │       └── Dockerfile
+│       ├── prototype
+│       │   ├── client.py
+│       │   ├── main.py
+│       │   ├── server.py
+│       │   └── utils
+│       │       ├── distillation.py
+│       │       └── load_federated_data.py
+│       └── server
+│           └── torch
+│               ├── app.py
+│               ├── Dockerfile
+│               └── strategy
+│                   ├── fedavg.py
+└── utils
+    ├── data
+    │   ├── get_image_datasets.py
+    │   └── get_signs_dataset.py
+    ├── epochs_distributions.py
+    ├── estimator
+    │   ├── architecture.py
+    │   ├── data.py
+    │   ├── load.py
+    │   ├── lstm.py
+    │   ├── test.py
+    │   └── train.py
+    ├── __init__.py
+    ├── loader.py
+    ├── process
+    │   ├── __init__.py
+    │   ├── poi.py
+    │   └── results
+    │       ├── processed
+    │       │   ├── accuracy.py
+    │       │   ├── aggregate.py
+    │       │   ├── communication.py
+    │       │   ├── epoch.py
+    │       │   └── mobility.py
+    │       └── raw
+    │           └── communication.py
+    ├── torch
+    │   ├── load_federated_data.py
+    │   └── utils.py
+    ├── utils.py
+    └── visualization
+        ├── accuracy.py
+        ├── animation.py
+        ├── communication.py
+        ├── energy.py
+        ├── epoch_delays.py
+        ├── legends.py
+        └── time2acc.py
+```
+During its execution, other paths will be created to store the log and results.
+
+# Considered Seals
+
+In the evaluation process we consider all four seals: Available Artifacts (SeloD), Functional Artifacts (SeloF), Sustainable Artifacts (SeloS), and Reproducible Experiments (SeloR).
 
 
+# Basic Information 
+
+The mobility and communication models were adapted from [ https://github.com/AiramL/TimeOptimizedFederatedLearning TOFL ]. Referer to it to get technical details.
+
+# Minimum Requirement
+
+- SO: Ubuntu 22.04.5 LTS
+- Cores: 2
+- Memory: 4 GB
+- Storage: 64 GB
+
+# Dependencies
+
+This repository has the following dependencies:
+
+- VirtualBox 7.1.12 (for the VM execution only)
+- Git command 2.34.1
+- Python3.12
+- Conda 25.5.1
+- SUMO 1.24.0
+- pandas 2.3.1
+- numpy 1.26.4
+- torch 2.3.0
+- torchvision 0.18.0
+- matplotlib 3.10.3
+- flower 1.7.0
+- tensorflow 2.19.0
+- scikit-learn 1.7.1
+- seaborn 0.13.2
+- scikit-image 0.25.2
+
+Install the dependencies with the command bellow:
+
+```bash 
+	sudo scripts/build/dependencies.sh 
+```
+
+# Security Concerns
+
+Our code only uses data from image datasets and libraries well-known on the literature. Therefore, this code does not impose any risk for the host during its execution.
+
+# Requirements
+
+# Installation
+
+## Virtual Machine
+
+The entire environment was virtualized to facilitate easier execution. You can download the virtual machine image from the following address:
+```bash
+wget https://gta.ufrj.br/~airam/cairos.ova
+```
+
+Load the image on VirtualBox to execute the experiments and execute all commands with root user.
+
+```bash
+user: root
+password: SBRC2026
+```
+
+When using the provided virtual machine, you can skip directly to the [Experiments](#experiments) Section.
+
+## Baremetal
+
+```bash 
+	sudo scripts/build/dependencies.sh 
+```
+
+# Minimal Execution
+
+# Experiments
+
+## Conclusion 
+
+If we were able to generate all 8 figures, the test was successful. To reproduce the exact results in the paper, you must change the simulation parameters as follows:
+
+- Number of clients: XX
+- Number of epochs: XX
+- SUMO simulation time: XX seconds
+
+# Paper
+
+[CAIROS: Controle Adaptativo do Aprendizado Federado em Redes Sem Fio](https://www.gta.ufrj.br/ftp/gta/TechReports/SAC26.pdf)
+
+# Cite this work
+
+```bash
+@inproceedings{souza2025cairos,
+  title={CAIROS: Controle Adaptativo do Aprendizado Federado em Redes Sem Fio},
+  author={de Souza, L. A. C., Achir, N., Campista, M. E. M., Costa, L. H. M. K.},
+  booktitle={Simpósio Brasileiro de Redes de Computadores e Sistemas Distribuídos (SBRC)},
+  year={2026},
+  organization={SBC}
+}
+```
+
+# LICENSE
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
