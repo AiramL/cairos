@@ -4,10 +4,19 @@ Vehicular Federated Learning (VFL) is applied to the training of AI models to en
 
 # README Structure
 
-[Organization](#organization)
-[]()
-[]()
-[]()
+- [Organization](#organization)
+- [Considered Seals](#considered seals)
+- [Basic Information](#basic information)
+- [Minimum Requirement](#minimum requirement)
+- [Dependencies](#dependencies)
+- [Security Concerns](#security concerns)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Minimal Execution](#minimal execution)
+- [Experiments](#experiments)
+- [Paper](#paper)
+- [Cite this work](#cite this work)
+- [LICENSE](#license)
 
 # Organization
 
@@ -136,7 +145,7 @@ In the evaluation process we consider all four seals: Available Artifacts (SeloD
 
 # Basic Information 
 
-The mobility and communication models were adapted from [ https://github.com/AiramL/TimeOptimizedFederatedLearning TOFL ]. Referer to it to get technical details.
+The mobility and communication models were adapted from [TOFL](https://github.com/AiramL/TimeOptimizedFederatedLearning). Referer to it to get technical details.
 
 # Minimum Requirement
 
@@ -165,11 +174,6 @@ This repository has the following dependencies:
 - seaborn 0.13.2
 - scikit-image 0.25.2
 
-Install the dependencies with the command bellow:
-
-```bash 
-	sudo scripts/build/dependencies.sh 
-```
 
 # Security Concerns
 
@@ -197,8 +201,24 @@ When using the provided virtual machine, you can skip directly to the [Experimen
 
 ## Baremetal
 
+Clone this repository:
+
+```bash
+git clone git@github.com:AiramL/cairos.git
+```
+
+Install the dependencies with the command bellow:
+
 ```bash 
 	sudo scripts/build/dependencies.sh 
+```
+
+```bash 
+	sudo scripts/build/env.sh 
+```
+
+```bash 
+	source scripts/build/paths.sh 
 ```
 
 # Minimal Execution
@@ -207,11 +227,50 @@ When using the provided virtual machine, you can skip directly to the [Experimen
 
 ## Conclusion 
 
-If we were able to generate all 8 figures, the test was successful. To reproduce the exact results in the paper, you must change the simulation parameters as follows:
+If we were able to generate all 8 figures, the test was successful. To reproduce the exact results in the paper, you must change the simulation by copying pasting the parameters as follows on the [config/config.yaml](config/config.yaml):
 
-- Number of clients: XX
-- Number of epochs: XX
-- SUMO simulation time: XX seconds
+```yaml
+environment: "cairos"
+
+datasets:
+        CIFAR-10: 
+                classes: 10
+                features: 32,32,3
+        MNIST: 
+                classes: 10
+                features: 32,32,3
+        FMNIST:
+                classes: 10
+                features: 32,32,3
+        SIGN: 
+                classes: 43
+                features: 32,32,3
+simulation:
+        cars: 60
+        mobility:
+                distance:
+                        x: 1000
+                        y: 1000       
+                repetitions: 10
+        communication:
+                repetitions: 30
+        speed:
+                index: 
+                        - 0
+                        - 1
+                        - 2
+                value:
+                        - 3.638889 # 13.1km/h
+                        - 8.333333 # 30 km/h
+                        - 13.88889 # 50 km/h
+        federated_learning:
+                server:
+                        epochs: 50
+        base_station:
+                range: 1200
+                positions: "communication/base_stations.csv"
+
+```
 
 # Paper
 
