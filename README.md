@@ -233,18 +233,42 @@ git clone git@github.com:AiramL/cairos.git
 Install the dependencies with the command below:
 
 ```bash 
-	sudo scripts/build/dependencies.sh 
+source scripts/build/dependencies.sh 
 ```
 
 ```bash 
-	sudo scripts/build/env.sh 
+source scripts/build/env.sh 
 ```
 
 ```bash 
-	source scripts/build/paths.sh 
+source scripts/build/paths.sh 
 ```
+
+```bash 
+source scripts/run/raw/mobility.sh 
+```
+
+
+```bash 
+source scripts/run/processed/mobility.sh 
+```
+
+
+```bash 
+source scripts/run/raw/communication.sh 
+```
+
+```bash 
+source scripts/run/processed/communication.sh 
+```
+
 
 # Minimal Execution
+
+```bash 
+source scripts/run/experiments.sh 
+```
+
 
 # Experiments
 
