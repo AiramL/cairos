@@ -190,7 +190,7 @@ The entire environment was virtualized to facilitate easier execution. You can d
 wget https://gta.ufrj.br/~airam/cairos.ova
 ```
 
-Load the image on VirtualBox to execute the experiments and execute all commands with root user.
+Load the image into VirtualBox to run the experiments, and execute all commands as the root user.
 
 ```bash
 user: root
@@ -201,13 +201,36 @@ When using the provided virtual machine, you can skip directly to the [Experimen
 
 ## Baremetal
 
+### Conda (1 minute)
+
+#### Get the script to install miniconda
+```bash
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+```
+
+#### Change script permissions
+```bash
+chmod +x Miniconda3-latest-Linux-x86_64.sh
+```
+
+#### Execute installation
+```bash
+./Miniconda3-latest-Linux-x86_64.sh
+```
+Accept all the conditions and choose the path to install miniconda3, by default, it is located in/root/miniconda3.
+
+#### Run environment
+```bash
+source ~/.bashrc
+```
+
 Clone this repository:
 
 ```bash
 git clone git@github.com:AiramL/cairos.git
 ```
 
-Install the dependencies with the command bellow:
+Install the dependencies with the command below:
 
 ```bash 
 	sudo scripts/build/dependencies.sh 
