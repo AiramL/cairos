@@ -28,8 +28,21 @@ simulation:
                 value:
                         - 13.88889 # 50 km/h
         federated_learning:
+                framework: "torch"
+                data:
+                        alpha: "5.0"
                 server:
-                        epochs: 10
+                        ip: "127.0.0.1"
+                        port: "8081"
+                        timeout: 50
+                        rounds: 10
+                        n_clients_fit: 5
+                        strategy: "cairos_pe"
+                        epochs_distribution: "equal"
+                client:
+                        model: "RESNET10"
+                        epochs: 5
+                        dataset: "CIFAR-10"
         base_station:
                 range: 1200
                 positions: "communication/base_stations.csv"

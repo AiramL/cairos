@@ -1,31 +1,23 @@
 #!/bin/bash
 
-alpha_dirichlet="5.0"
-global_epochs=20
-timeout=50
-n_clients=10
+framework=$(yq '.simulation.federated_learning.framework' config/config.yaml )
+ip=$(yq '.simulation.federated_learning.server.ip' config/config.yaml )
+port=$(yq '.simulation.federated_learning.server.port' config/config.yaml )
+n_clients=$(yq '.simulation.cars' config/config.yaml )
+rounds=$(yq '.simulation.federated_learning.server.rounds' config/config.yaml )
+n_clients_fit=$(yq '.simulation.federated_learning.server.n_clients_fit' config/config.yaml )
+model=$(yq '.simulation.federated_learning.client.model' config/config.yaml )
+local_epochs=$(yq '.simulation.federated_learning.client.epochs' config/config.yaml )
+dataset=$(yq '.simulation.federated_learning.client.dataset' config/config.yaml )
+alpha_dirichlet=$(yq '.simulation.federated_learning.data.alpha' config/config.yaml )
+timeout=$(yq '.simulation.federated_learning.server.timeout' config/config.yaml )
+strategy=$(yq '.simulation.federated_learning.server.strategy' config/config.yaml )
+distribution_type=$(yq '.simulation.federated_learning.server.epochs_distribution' config/config.yaml )
 
-for local_epochs in 10 5 20;
-do
+exec_id=0
 
-	#for distribution_type in "uniform" "normal" "equal";
-	for distribution_type in "equal";
-	do
+echo "Starting FL training with $framework server at $ip:$port, $n_clients clients executing $local_epochs local epochs, for $rounds rounds, selecting $n_clients_fit clients to fit the $model model for $local_epochs local epochs on the dataset $dataset using a datadistribution with alpha equals to $alpha_dirichlet, a maximun timeout of $timeout seconds, using the $strategy strategy, and the $distribution_type local epochs distribution."
 
-		for dataset in "CIFAR-10" "SIGN"; 
-		do
+source scripts/run/baremetal.sh "$strategy" "$alpha_dirichlet" "$model" "$port" "$framework" "$n_clients" "$dataset" "$rounds" "$local_epochs" "$n_clients_fit" "$distribution_type" "$timeout" "$exec_id"
+	
 
-			for fit in 10 30 50;
-			do
-				for strategie in "cairos_pe" "cairos_pb";
-				do
-					source scripts/run/baremetal.sh "$strategie" "$alpha_dirichlet" "RESNET10" "8081" "torch" "$n_clients" "$dataset" "$global_epochs" "$local_epochs" "$fit" "$distribution_type" "$timeout" "5"
-					
-				done
-			done
-
-		done
-
-	done
-
-done
