@@ -209,7 +209,7 @@ def create_logger_client(log_path,
 
 def allocate_cuda():
 
-    if torch.cuda.is_available:
+    if torch.cuda.is_available():
         
         n_cuda = torch.cuda.device_count()
         best = 'cuda'
