@@ -23,7 +23,7 @@ class EstimatorLSTM(Estimator):
 
     def __init__(self,
                  model_path="models",
-                 speed=2):
+                 speed=0):
 
         model_name = f"{model_path}/model_10_speed_{speed}.pt"
         

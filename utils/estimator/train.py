@@ -9,7 +9,9 @@ import torch.utils.data as data
 
 from utils.utils import load_config
 from utils.estimator.lstm import LSTM
-from utils.estimator.data import load_tp
+from utils.estimator.data import (
+        load_tp,
+        create_dataset)
 
 
 def train(speed=0, 
@@ -37,7 +39,7 @@ def train(speed=0,
                              shuffle=True, 
                              batch_size=8)
 
-    n_epochs = 60
+    n_epochs = 20
 
     for epoch in range(n_epochs):
     
@@ -68,16 +70,19 @@ def train(speed=0,
         print("Epoch %d: train RMSE %.4f, test RMSE %.4f" % (epoch, train_rmse, test_rmse))
 
 
-        with torch.no_grad():
+    with torch.no_grad():
 
-            # shift train predictions for plotting
-            train_plot = np.ones_like(tpd) * np.nan
-            y_pred = model(X_train.to(device))
-            y_pred = y_pred[:, -1, :]
-            train_plot[lookback:train_size] = model(X_train.to(device))[:, -1, :].detach().cpu().numpy()
-            # shift test predictions for plotting
-            test_plot = np.ones_like(tpd) * np.nan
-            test_plot[train_size+lookback:len(tpd)] = model(X_test.to(device))[:, -1, :].detach().cpu().numpy()
+        # shift train predictions for plotting
+        train_plot = np.ones_like(tpd) * np.nan
+        y_pred = model(X_train.to(device))
+        y_pred = y_pred[:, -1, :]
+        train_plot[lookback:train_size] = model(X_train.to(device))[:, -1, :].detach().cpu().numpy()
+        # shift test predictions for plotting
+        test_plot = np.ones_like(tpd) * np.nan
+        res = model(X_test.to(device))[:, -1, :]
+        print(res, len(res))
+        test_plot[train_size+lookback:len(tpd)] = res.detach().cpu().numpy()
+        print(test_plot)
 
     # plot
     if PLOT:

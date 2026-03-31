@@ -338,10 +338,8 @@ class Vehicle:
         
         else:
 
-            self.throughput_dl = 0.0 
-            self.throughput_ul = 0.0
-
-
+            self.throughput_dl = (self.spectral_efficiency_dl * self.allocated_bandwidth_dl) * 1e-6 * (self.base_station_range / 2*self.distance_ul)
+            self.throughput_ul = (self.spectral_efficiency_ul * self.allocated_bandwidth_ul) * 1e-6 * (self.base_station_range / 2*self.distance_ul)
 
 # save to an output file
 def save_simulation_results_to_file(filename, vehicles, timestamp):
