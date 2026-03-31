@@ -14,7 +14,7 @@ import flwr as fl
 
 from .strategy.fedavg import FedAvg
 from utils.torch.utils import (
-        get_args_server
+        get_args_server,
         create_logger_server,
         limit_memory)
 
