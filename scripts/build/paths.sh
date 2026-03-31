@@ -9,3 +9,5 @@ do
 	[ ! -d mobility/raw/speed"$i" ] && mkdir -p mobility/raw/speed"$i"
 
 done
+	
+[ ! -d models/ ] && mkdir -p models/
