@@ -5,17 +5,17 @@ Vehicular Federated Learning (VFL) is applied to the training of AI models to en
 # README Structure
 
 - [Organization](#organization)
-- [Considered Seals](#considered seals)
-- [Basic Information](#basic information)
-- [Minimum Requirement](#minimum requirement)
+- [Considered Seals](#considered_seals)
+- [Basic Information](#basic_information)
+- [Minimum Requirement](#minimum_requirement)
 - [Dependencies](#dependencies)
-- [Security Concerns](#security concerns)
+- [Security Concerns](#security_concerns)
 - [Requirements](#requirements)
 - [Installation](#installation)
-- [Minimal Execution](#minimal execution)
+- [Minimal Execution](#minimal_execution)
 - [Experiments](#experiments)
 - [Paper](#paper)
-- [Cite this work](#cite this work)
+- [Cite this work](#cite_this_work)
 - [LICENSE](#license)
 
 # Organization
@@ -145,6 +145,8 @@ In the evaluation process we consider all four seals: Available Artifacts (SeloD
 
 # Basic Information 
 
+![Training dynamic in CAIROS](figures/system/dynamic.png)
+
 The mobility and communication models were adapted from [TOFL](https://github.com/AiramL/TimeOptimizedFederatedLearning). Referer to it to get technical details.
 
 # Minimum Requirement
@@ -169,7 +171,6 @@ This repository has the following dependencies:
 - torchvision 0.18.0
 - matplotlib 3.10.3
 - flower 1.7.0
-- tensorflow 2.19.0
 - scikit-learn 1.7.1
 - seaborn 0.13.2
 - scikit-image 0.25.2
@@ -219,10 +220,15 @@ chmod +x Miniconda3-latest-Linux-x86_64.sh
 ```
 Accept all the conditions and choose the path to install miniconda3, by default, it is located in/root/miniconda3.
 
-#### Run environment
+#### Activate conda environment
+
+Execute the command bellow to activate conda environment:
+
 ```bash
 source ~/.bashrc
 ```
+
+### Installing the requirement of our code
 
 Clone this repository:
 
@@ -236,45 +242,73 @@ Install the dependencies with the command below:
 source scripts/build/dependencies.sh 
 ```
 
+Create a new conda environment to install necessary packages:
+
 ```bash 
 source scripts/build/env.sh 
 ```
+
+Create necessary directories to save the results:
 
 ```bash 
 source scripts/build/paths.sh 
 ```
 
+### Genrating the mobility and communication data for the experiments 
+
+Execute the command to generate random trips with SUMO with the given number of clients:
+
 ```bash 
 source scripts/run/raw/mobility.sh 
 ```
 
+Now, we process the raw results to transform it into a pandas dataframe, which will be used by our communiation model:
 
 ```bash 
 source scripts/run/processed/mobility.sh 
 ```
-
+The communication model receives as input clients' positions and calculates the throughput. This is executed several times:
 
 ```bash 
 source scripts/run/raw/communication.sh 
 ```
 
+We process all the repeated communication results to generate a mean value of users' throughput:
+
 ```bash 
 source scripts/run/processed/communication.sh 
 ```
 
+Finally, we train clients' estimator with the throughtput data that we have generated previously:
+
+```bash 
+source scripts/run/train_estimator.sh 
+```
 
 # Minimal Execution
+
+For executing CAIROS, there is a script: 
 
 ```bash 
 source scripts/run/experiments.sh 
 ```
 
+The parameters were configured for a minimal execution. 
+
 
 # Experiments
 
+When executing the script above, we produces a single execute of all experiments. To fully generate, it take hours.
+
+## Experiment 1: Training efficiency
+
+## Experiment 2: Model's performance
+
+
+
 ## Conclusion 
 
-If we were able to generate all 8 figures, the test was successful. To reproduce the exact results in the paper, you must change the simulation by copying pasting the parameters as follows on the [config/config.yaml](config/config.yaml):
+If we were able to generate the selection and classification data, the test was successful. To reproduce the exact results in the paper, you must change the simulation by copying pasting the parameters as follows on the [config/config.yaml](config/config.yaml):
 
 ```yaml
 environment: "cairos"
@@ -325,7 +359,7 @@ simulation:
 
 # Cite this work
 
-```bash
+```bibtex
 @inproceedings{souza2025cairos,
   title={CAIROS: Controle Adaptativo do Aprendizado Federado em Redes Sem Fio},
   author={de Souza, L. A. C., Achir, N., Campista, M. E. M., Costa, L. H. M. K.},
