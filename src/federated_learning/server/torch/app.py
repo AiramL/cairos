@@ -13,14 +13,20 @@ import numpy as np
 import flwr as fl
 
 from .strategy.fedavg import FedAvg
-from utils.torch.utils import get_args_server
-from utils.torch.utils import create_logger_server
-from utils.torch.load_federated_data import load_data_server
-from architectures.torch.implementation import build_model
+from utils.torch.utils import (
+        get_args_server
+        create_logger_server,
+        limit_memory)
+
+from utils.torch.load_federated_data import (
+        load_data_server,
+        CustomDataset)
+from architectures.torch.implementation import (
+        build_model,
+        get_weights,
+)
 from flwr.common import ndarrays_to_parameters
 
-from architectures.torch.implementation import get_weights
-from utils.torch.load_federated_data import CustomDataset
 from utils.loader import load_config
 
 cfg = load_config('config/config.yaml')
@@ -47,15 +53,12 @@ os.makedirs(server_log_path,
 
 message_length = 800 * 1024 * 1024
 
-props = torch.cuda.get_device_properties(device=None)
-total_memory = props.total_memory
-client_memory = 1024 * 1024 * 1024 # 1 GB for the server
-memory_percentage = client_memory/total_memory
-torch.cuda.set_per_process_memory_fraction(memory_percentage, 
-                                           device=None)
-
-
 logger = create_logger_server(log_path=server_log_path+aggregation)
+
+if torch.cuda.device_count():
+
+    memory_limit(logger)
+
 
 logger.debug(f"Execution path: {os.getcwd()}.")
 

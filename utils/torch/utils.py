@@ -333,3 +333,24 @@ def create_logger_server(log_path):
         logger.addHandler(handler)
 
     return logger
+
+def limit_memory(logger):
+    
+    try:
+        
+        props = torch.cuda.get_device_properties(device=None)
+        total_memory = props.total_memory
+        client_memory = 1024 * 1024 * 1024 # 1024 MB for each client
+        memory_percentage = client_memory/total_memory
+        torch.cuda.set_per_process_memory_fraction(memory_percentage, 
+                                                   device=None)
+        
+        logger.debug(f"Total memory on the system: {total_memory}.")
+        logger.debug(f"Total memory percentage: {memory_percentage}.")
+        logger.debug(f"Execution path: {os.getcwd()}.")
+        logger.debug(f"Training with model architecture {MODEL} and dataset {DATASET}.")
+        logger.debug(f"GPU: {torch.cuda.current_device()}")
+
+    except:
+
+        pass
