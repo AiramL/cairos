@@ -14,6 +14,7 @@ if [ -z $1 ]; then
 	numClientsFit=$(($numClients/2))
 	scenario="equal"
 	timeout=120
+	speed_id="0"
 	execution="1"
 
 else
@@ -30,7 +31,8 @@ else
 	numClientsFit=${10}
 	scenario=${11}
 	timeout=${12}
-	execution=${13}
+	speed_id=${13}
+	execution=${14}
 
 fi
 
@@ -115,7 +117,7 @@ elif [ $server == "cairos_pe" ]; then
 	do
 	
 		echo "Waiting client "$i" initialization"
-		python -m src.federated_learning.client.$framework.app -epb=0 -ot=0 -eid=0 -mt=$timeout -nle="${epochs_array[$i]}" -ds=$dataset -md=$model -nc=$numClients -cid=$i -b=$bs -ncf=$numClientsFit -mp=$clients_model_path -lp=$clients_log_path -rp=$clients_result_path -ctp=$time_path_client -sp=$server_port -a=$alpha >> $clients_result_path$model"/raw/client_$i" &
+		python -m src.federated_learning.client.$framework.app -epb=0 -ot=0 -eid=0 -spid=$speed_id -mt=$timeout -nle="${epochs_array[$i]}" -ds=$dataset -md=$model -nc=$numClients -cid=$i -b=$bs -ncf=$numClientsFit -mp=$clients_model_path -lp=$clients_log_path -rp=$clients_result_path -ctp=$time_path_client -sp=$server_port -a=$alpha >> $clients_result_path$model"/raw/client_$i" &
 		
 		sleep 1
 
@@ -149,7 +151,7 @@ elif [ $server == "cairos_pb" ]; then
 	do
 	
 		echo "Waiting client "$i" initialization"
-		python -m src.federated_learning.client.$framework.app -epb=1 -ot=0 -eid=0 -mt=$timeout -nle="${epochs_array[$i]}" -ds=$dataset -md=$model -nc=$numClients -cid=$i -b=$bs -ncf=$numClientsFit -mp=$clients_model_path -lp=$clients_log_path -rp=$clients_result_path -ctp=$time_path_client -sp=$server_port -a=$alpha >> $clients_result_path$model"/raw/client_$i" &
+		python -m src.federated_learning.client.$framework.app -epb=1 -ot=0 -eid=0 -spid=$speed_id -mt=$timeout -nle="${epochs_array[$i]}" -ds=$dataset -md=$model -nc=$numClients -cid=$i -b=$bs -ncf=$numClientsFit -mp=$clients_model_path -lp=$clients_log_path -rp=$clients_result_path -ctp=$time_path_client -sp=$server_port -a=$alpha >> $clients_result_path$model"/raw/client_$i" &
 		
 		sleep 1
 

@@ -26,6 +26,12 @@ def get_args_client():
                         type=int, 
                         default=0,
                         help="Execution identifier") 
+    
+    parser.add_argument("-spid",
+                        "--speed_id", 
+                        type=int, 
+                        default=0,
+                        help="Speed identifier") 
 
     parser.add_argument("-nle",
                         "--number_of_local_epochs", 
