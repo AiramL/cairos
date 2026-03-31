@@ -326,17 +326,18 @@ def resnet10(*, progress: bool = True, **kwargs: Any) -> ResNet:
 
 class Net(nn.Module):
     
-    def __init__(self, 
-                 num_classes):
+    def __init__(self,
+                 features_shape=3,
+                 num_classes=10):
 
         super(Net, self).__init__()
-        self.feature1=nn.Sequential(
-        nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False),
+        self.conv1=nn.Sequential(
+        nn.Conv2d(features_shape, 64, kernel_size=3, stride=1, padding=1, bias=False),
         nn.BatchNorm2d(64),
         nn.ReLU(inplace=True),
         nn.MaxPool2d(kernel_size=3, stride=2, padding=1))#64*16*16
         
-        self.feature2=nn.Sequential(
+        self.conv2=nn.Sequential(
         nn.AdaptiveAvgPool2d(1),
         nn.Flatten(),#64*2*2
         nn.Linear(64,48),
@@ -348,9 +349,9 @@ class Net(nn.Module):
         )
 
     def forward(self, x):
-        x = self.feature1(x)
+        x = self.conv1(x)
         feature=x
-        x=self.feature2(x)
+        x=self.conv2(x)
         x = self.fc(x)
         return x
 

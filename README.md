@@ -15,7 +15,6 @@ Vehicular Federated Learning (VFL) is applied to the training of AI models to en
 - [Minimal Execution](#minimal_execution)
 - [Experiments](#experiments)
 - [Paper](#paper)
-- [Cite this work](#cite_this_work)
 - [LICENSE](#license)
 
 # Organization
@@ -357,7 +356,7 @@ simulation:
 
 [CAIROS: Controle Adaptativo do Aprendizado Federado em Redes Sem Fio](https://www.gta.ufrj.br/ftp/gta/TechReports/SAC26.pdf)
 
-# Cite this work
+Cite this work as:
 
 ```bibtex
 @inproceedings{souza2025cairos,

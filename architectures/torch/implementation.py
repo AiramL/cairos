@@ -148,7 +148,7 @@ def train(model,
     
     for epoch in range(n_epochs):
         
-        logger.debug(f'starting local epoch {epoch} with a data size of {len(trainloader)}')
+        logger.debug(f'starting local epoch {epoch} with a data size of {len(trainloader.dataset)}')
 
         for index, data in enumerate(trainloader):
             
@@ -170,9 +170,9 @@ def train(model,
             else:
 
                 logger.debug(f'data batch size less than 2: {len(data[0])}')
+        
+        scheduler.step()
     
-    scheduler.step()
-
     avg_trainloss = running_loss / len(trainloader.dataset)
     
     return avg_trainloss
