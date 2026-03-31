@@ -30,6 +30,7 @@ num_clients = args.num_clients                      # 10
 num_selected_clients = args.num_clients_fit         # 10
 alpha = args.alpha                                  # 1
 exec_id = args.exec_id                              # 0
+speed_id = args.speed_id                            # 0
 strategy = args.strategy                            # fedavg
 scenario = args.scenario                            # all_in_one
 original_training = args.original_training          # False
@@ -96,7 +97,7 @@ testloader = torch.utils.data.DataLoader(test_dataset,
                                          pin_memory=True)
 
 # load through put dataframe
-df = pd.read_csv(f"data/processed/speed2/{exec_id}.csv") 
+df = pd.read_csv(f"data/processed/speed{speed_id}/{exec_id}.csv") 
 throughput_df = df[df['Node ID'] == client_id]
 
 logger.debug("Building model")
