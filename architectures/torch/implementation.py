@@ -18,8 +18,6 @@ from .custom_models import (
         resnet10
 )
 
-from .flisbee import FlisbeeNet
-
 from timeit import default_timer as timer
 
 from utils.torch.utils import allocate_cuda
@@ -107,19 +105,6 @@ def build_model(features_shape=None,
    
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
         
-    elif model_name == "FLISBEE":
-
-        model = FlisbeeNet(num_classes=labels_shape)
-
-        criterion = nn.CrossEntropyLoss()
-
-        optimizer = torch.optim.SGD(model.parameters(), 
-                                    lr=lr,
-                                    momentum=0.9, 
-                                    weight_decay=5e-4)
-   
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
-
     else:
         
         raise ValueError('Model not implemented')
