@@ -66,15 +66,18 @@ class FedAvg(fl.server.strategy.FedAvg):
     ) -> Tuple[Optional[Parameters], Dict[str, Scalar]]:
         # Do not aggregate if there are failures and failures are not accepted
         if not self.accept_failures and failures:
-            return None, {}
+            return self.initial_parameters, {}
 
+        self.logger.debug(f'aggregating at epoch {server_round}')
         global_agg_start_time = time.time()
         for c,r in results:
-            self.logger.debug(f'time: {r.metrics["time"]}')
+            self.logger.debug(f'time: {r.metrics["time"]}, client: {r.metrics["cid"]}')
         results = [(client, fit_res) for client, fit_res in results if fit_res.metrics['time'] <= self.timeout ]
         self.save_aggregation(server_round,
                               len(results))
-
+        
+        self.logger.debug(f'results: {len(results)}, \
+                            result id: {[ id(parameters[1].parameters) for parameters in results ]}')
         """Aggregate fit results using weighted average."""
         if not results:
             return None, {}

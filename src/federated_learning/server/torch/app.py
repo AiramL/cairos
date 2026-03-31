@@ -8,8 +8,6 @@
 
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-
 import torch
 import numpy as np
 import flwr as fl
@@ -62,8 +60,6 @@ logger = create_logger_server(log_path=server_log_path+aggregation)
 logger.debug(f"Execution path: {os.getcwd()}.")
 
 logger.debug(f"starting training with aggregation strategy {aggregation}, {num_clients} available clients, selecting {num_clients_fit} to fit, during {num_rounds} global epochs")
-
-message_length = 800 * 1024 * 1024
 
 # Initialize model parameters
 n_classes = cfg['datasets'][DATASET]['classes']

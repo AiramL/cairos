@@ -12,9 +12,8 @@ from architectures.torch.implementation import (
         train, 
         evaluate)
 
-from utils.torch.load_federated_data import CustomDataset
-
 from utils.estimator.architecture import EstimatorLSTM
+from utils.torch.load_federated_data import CustomDataset
 
 # Federated Learning Client
 class FLClient(fl.client.NumPyClient):
@@ -61,7 +60,8 @@ class FLClient(fl.client.NumPyClient):
         # identifiers
         self.cid = cid
         self.mid = mid 
-
+        
+        self.logger.debug(f'model id: {id(model)}')
         self.model = model.to(device)
         self.optimizer = optimizer
         self.criterion = criterion
@@ -82,20 +82,22 @@ class FLClient(fl.client.NumPyClient):
         self.throughput = throughput
 
         # computing parameters
-        self.batch_time = 0.047
-        self.epoch_time = self.batch_time * self.train_size / batch_size
+        self.batch_time = 0.1
+        self.epoch_time = self.batch_time * len(self.trainloader)
     
         # communication parameters
         self.estimator = EstimatorLSTM()
-        self.window_size = 10
-        self.error_tolerance = 1.1
+        self.window_size = 5
+        self.error_tolerance = 1.2
         self.message_period = 0.1
         self.state = 0
         self.timeout = 0
         self.max_timeout = max_timeout
         self.estimation_per_batch = estimation_per_batch
-        self.past_delays = deque(self.window_size*[10],     # starting the past delays with a fixed value
-                                 maxlen=10)                 # fixing the size of our deque
+        self.past_delays = deque(self.window_size*[0],                    # starting the past delays with a fixed value
+                                 maxlen=self.window_size)                 # limiting window size
+        self.estimated_past_delays = deque(self.window_size*[0],          # starting the estimated past delays with a fixed value
+                                           maxlen=self.window_size)       # limiting window size
         self.model_size = sum(p.numel() * p.element_size()
                               for p in list(model.parameters()) + list(model.buffers())) / 1024
 
@@ -153,17 +155,20 @@ class FLClient(fl.client.NumPyClient):
 
         time_last_chunk = 0.0
 
-        window = torch.tensor(list(self.past_delays),
+        window = torch.tensor(list(self.estimated_past_delays),
                               dtype=torch.float32).view(-1,1)
-
-        estimated_delay = self.estimator.predict(window)
-
-        self.past_delays.appendleft(estimated_delay)
+        
+        estimated_delay = abs(self.estimator.predict(window))
+        self.logger.debug(f'estimated delay: {estimated_delay}')
+    
+        self.logger.debug('updating estimated past delays')
+        self.estimated_past_delays.appendleft(estimated_delay)
 
         maximum_chunk_size = floor(self.message_period * 
                                    1000 * 
                                    estimated_delay)
 
+        self.logger.debug(f'verifying if there is remaning data, max chunck: {maximum_chunk_size}, data: {data}')
         if (maximum_chunk_size >= data):
 
             time_last_chunk = data/(1000 * 
@@ -183,7 +188,7 @@ class FLClient(fl.client.NumPyClient):
 
         while (remaining_data):
             
-            self.logger.debug(f"remaining data: {remaining_data} state: {state} type {type(state)}")
+            self.logger.implementation(f"remaining data: {remaining_data}")
             remaining_data, time_last_chunk = self.send_real_data_chunk(remaining_data,
                                                                         state)
             
@@ -203,6 +208,7 @@ class FLClient(fl.client.NumPyClient):
         remaining_data = self.model_size
         state = self.time_to_state(time)
         self.update_past_delays(state)
+        self.estimated_past_delays = self.past_delays.copy()
 
         while (remaining_data):
             
@@ -239,6 +245,7 @@ class FLClient(fl.client.NumPyClient):
     def set_weights(self, 
                     parameters):
     
+        self.logger.debug(f'parameters id: {id(parameters)}')
         params_dict = zip(self.model.state_dict().keys(), parameters)
         state_dict = OrderedDict({k: torch.tensor(v) for k, v in params_dict})
         self.model.load_state_dict(state_dict, strict=True)
@@ -288,11 +295,8 @@ class FLClient(fl.client.NumPyClient):
 
                 current_time += self.batch_time
                 self.logger.debug(f'new current time: {current_time}')
-                self.logger.debug(f'previous delays: {self.past_delays}')
                 state = self.time_to_state(current_time)
-                self.logger.debug(f'new state: {state}')
                 self.update_past_delays(state)
-                self.logger.debug(f'updated delays: {self.past_delays}')
 
                 # estimating communication delay for the next batch
                 if self.estimation_per_batch:
@@ -300,23 +304,26 @@ class FLClient(fl.client.NumPyClient):
                     current_time += self.batch_time
                     delay = self.get_estimated_delay(current_time)
                     self.logger.debug(f'estimated delay per batch: {delay}')
-
-                    if delay * self.error_tolerance + current_time > self.timeout:
+                    self.logger.debug(f'total estimated delay: {(delay + current_time) * self.error_tolerance }, timeout: {self.timeout}')
                     
-                        current_time -= self.batch_time
-
+                    if (delay + current_time) * self.error_tolerance > self.timeout:
+                    
+                        current_time -= 2*self.batch_time
+                        stop = True
                         break
             
+            # estimating the communication delay for each local epoch
             if not self.estimation_per_batch:
 
                 # estimating communication delay for the next epoch
-                current_time += self.epoch_time
+                current_time += 2*self.epoch_time
                 delay = self.get_estimated_delay(current_time)
                 self.logger.debug(f'estimated delay per epoch: {delay}')
+                self.logger.debug(f'total estimated delay for next epoch: {delay * self.error_tolerance + current_time}, timeout: {self.timeout}')
 
-                if delay * self.error_tolerance + current_time > self.timeout:
+                if (delay + current_time) * self.error_tolerance > self.timeout:
                     
-                    current_time -= self.epoch_time
+                    current_time -= 2*self.epoch_time
 
                     break
 
@@ -324,16 +331,16 @@ class FLClient(fl.client.NumPyClient):
         
         avg_trainloss = running_loss / self.train_size
         
-        return avg_trainloss, current_time
+        return avg_trainloss, current_time, delay
 
     def fit(self, 
             parameters, 
             config):
         
-        # synchronizing clients
+        self.logger.debug('synchronizing clients')
         current_time = 0
 
-        # Start timer to determine the computational time
+        self.logger.debug('start timer to determine the computational time')
         if self.real_timer:
 
             fit_start = timer() + self.get_real_delay(current_time)
@@ -344,8 +351,9 @@ class FLClient(fl.client.NumPyClient):
             # fit_start = self.get_real_delay(current_time)
             fit_start = 0 # assuming we only start training when clients received the model
     
-        # calculating the timeout of this epoch
+        self.logger.debug('calculating the timeout of this epoch')
         self.timeout = self.max_timeout - fit_start 
+        self.logger.debug(f'timeout: {self.timeout}')
 
         # update weights 
         self.set_weights(parameters)
@@ -365,16 +373,19 @@ class FLClient(fl.client.NumPyClient):
                          self.logger)
 
             current_time = self.i_epochs * self.epoch_time + fit_start
-            self.logger.debug(f'computation time: {current_time}, epoch time: {self.epoch_time}, fit start: {fit_start}')
+            self.logger.debug(f'computation time: {current_time}, \
+                                epoch time: {self.epoch_time}, \
+                                fit start: {fit_start}')
 
         else:
             
             self.logger.debug("training with CAIROS")
-            loss, current_time = self.train_cairos(fit_start)
+            loss, current_time, estimated_delay = self.train_cairos(fit_start)
+            self.logger.debug(f'total estimated delay after sending: {estimated_delay + current_time}')
 
         # Simulate that the client is transmitting the model through the network
         communication_time = self.get_real_delay(current_time)
-        self.logger.debug(f'communication time: {communication_time}')
+        self.logger.debug(f'real communication delay: {communication_time}')
 
         # Determine client's computational time 
         if self.real_timer:
@@ -389,9 +400,12 @@ class FLClient(fl.client.NumPyClient):
 
             self.training_time = current_time + communication_time
         
-        self.logger.debug(f'sending parameters to server: model_weights, len(train): {self.train_size} mid: {self.mid}, training time: {self.training_time}')
+        self.logger.debug(f'sending parameters to server: model_weights, \
+                            len(train): {self.train_size} \
+                            mid: {self.mid}, \
+                            training time: {self.training_time}')
         
-        return self.get_weights(), len(self.trainloader.dataset), {"time":self.training_time, 'loss':loss, "cid":self.cid}
+        return self.get_weights(), len(self.trainloader.dataset), {"time":self.training_time,'loss':loss,"cid":self.cid}
 
     def evaluate(self, 
                  parameters, 

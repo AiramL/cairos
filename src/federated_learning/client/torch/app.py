@@ -32,12 +32,7 @@ strategy = args.strategy                            # fedavg
 scenario = args.scenario                            # all_in_one
 original_training = args.original_training          # False
 max_timeout =  args.max_timeout                     # False
-#estimation_per_batch = args.estimation_per_batch    # False
-estimation_per_batch = False
-
-if scenario == "all_in_one":
-    
-    os.environ["CUDA_VISIBLE_DEVICES"] = f"{client_id%2}"
+estimation_per_batch = args.estimation_per_batch    # False
 
 import torch
 import flwr as fl
@@ -113,7 +108,7 @@ testloader = torch.utils.data.DataLoader(test_dataset,
                                          pin_memory=True)
 
 # load through put dataframe
-df = pd.read_csv(f"data/processed/speed0/{exec_id}.csv") 
+df = pd.read_csv(f"data/processed/speed2/{exec_id}.csv") 
 throughput_df = df[df['Node ID'] == client_id]
 
 logger.debug("Building model")
