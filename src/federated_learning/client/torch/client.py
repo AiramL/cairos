@@ -21,7 +21,6 @@ class FLClient(fl.client.NumPyClient):
     def __init__(self, 
                  *args,
                  cid=-1,
-                 mid=-1,
                  model=None,
                  i_epochs=5,
                  model_name="MOBILENET",
@@ -59,9 +58,7 @@ class FLClient(fl.client.NumPyClient):
 
         # identifiers
         self.cid = cid
-        self.mid = mid 
         
-        self.logger.debug(f'model id: {id(model)}')
         self.model = model.to(device)
         self.optimizer = optimizer
         self.criterion = criterion
@@ -101,7 +98,7 @@ class FLClient(fl.client.NumPyClient):
         self.model_size = sum(p.numel() * p.element_size()
                               for p in list(model.parameters()) + list(model.buffers())) / 1024
 
-        self.logger.debug(f'starting client with id {self.cid}, mid {self.mid} for model {self.model_name}')
+        self.logger.debug(f'starting client with id {self.cid}, for model {self.model_name}')
         self.logger.debug(f'epoch time: {self.epoch_time}, batch size: {batch_size}, batch time : {self.batch_time}, size train: {len(self.trainloader.dataset)}')
     
     def update_past_delays(self,
@@ -228,7 +225,6 @@ class FLClient(fl.client.NumPyClient):
 
     def get_weights(self):
         
-        self.logger.debug(f"GPU: {torch.cuda.current_device()}")
         result = [val.cpu().numpy() for _, val in self.model.state_dict().items()]
 
         return result
@@ -254,10 +250,7 @@ class FLClient(fl.client.NumPyClient):
     def get_properties(self, 
                        config):
             
-        self.logger.debug(f'call of get properties successful, returning mid: {self.mid}')
-        
-        return {'mid': self.mid,
-                'cid': self.cid}
+        return {'cid': self.cid}
    
     def train_cairos(self,
                      current_time):
@@ -402,7 +395,6 @@ class FLClient(fl.client.NumPyClient):
         
         self.logger.debug(f'sending parameters to server: model_weights, \
                             len(train): {self.train_size} \
-                            mid: {self.mid}, \
                             training time: {self.training_time}')
         
         return self.get_weights(), len(self.trainloader.dataset), {"time":self.training_time,'loss':loss,"cid":self.cid}
@@ -435,7 +427,7 @@ class FLClient(fl.client.NumPyClient):
                 
                 writer.writelines(str(self.global_epoch)+","+str(accuracy)+"\n")
         
-        self.logger.debug(f'sending parameters to server: loss {loss}, len(test): {self.test_size} accuracy: {float(accuracy)} mid: {self.mid}')
+        self.logger.debug(f'sending parameters to server: loss {loss}, len(test): {self.test_size} accuracy: {float(accuracy)}')
 
-        return loss, self.test_size, {"accuracy": float(accuracy), "mid":self.mid, "cid":self.cid}
+        return loss, self.test_size, {"accuracy": float(accuracy), "cid":self.cid}
 

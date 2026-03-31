@@ -112,7 +112,6 @@ model, criterion, optimizer, device, scheduler = build_model(features_shape=None
 logger.debug("Starting training")
 fl.client.start_client(server_address=f'{SERVER_IP}:{SERVER_PORT}', 
                        client=FLClient(cid=client_id,
-                                       mid=0,
                                        model=model,
                                        i_epochs=i_epochs,
                                        model_name=MODEL,
