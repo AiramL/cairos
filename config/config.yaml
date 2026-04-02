@@ -1,4 +1,4 @@
-environment: "cairos"
+environment: "cairos_sbrc2026"
 
 datasets:
         CIFAR-10: 
@@ -14,11 +14,11 @@ datasets:
                 classes: 43
                 features: 32,32,3
 simulation:
-        cars: 5
+        cars: 3
         mobility:
                 distance:
-                        x: 1000
-                        y: 1000       
+                        x: 50
+                        y: 50       
                 repetitions: 3
         communication:
                 repetitions: 10
@@ -35,8 +35,8 @@ simulation:
                         ip: "127.0.0.1"
                         port: "8081"
                         timeout: 50
-                        rounds: 10
-                        n_clients_fit: 5
+                        rounds: 3
+                        n_clients_fit: 3
                         strategy: "cairos_pe"
                         epochs_distribution: "equal"
                 client:
@@ -44,6 +44,6 @@ simulation:
                         epochs: 5
                         dataset: "CIFAR-10"
         base_station:
-                range: 1200
+                range: 500
                 positions: "communication/base_stations.csv"
 
