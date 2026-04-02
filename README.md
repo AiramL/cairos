@@ -139,14 +139,16 @@ During its execution, other paths will be created to store the log and results.
 
 # Considered Seals
 
-In the evaluation process we consider all four seals: Available Artifacts (SeloD), Functional Artifacts (SeloF), Sustainable Artifacts (SeloS), and Reproducible Experiments (SeloR).
+In the evaluation process, we consider all four seals: Available Artifacts (SeloD), Functional Artifacts (SeloF), Sustainable Artifacts (SeloS), and Reproducible Experiments (SeloR).
 
 
 # Basic Information 
 
+The system executes the training as exhibited in the figure below.
+
 ![Training dynamic in CAIROS](figures/system/dynamic.png)
 
-The mobility and communication models were adapted from [TOFL](https://github.com/AiramL/TimeOptimizedFederatedLearning). Referer to it to get technical details.
+The mobility and communication models were adapted from [TOFL](https://github.com/AiramL/TimeOptimizedFederatedLearning). Refer to it to get technical details.
 
 # Minimum Requirement
 
@@ -154,6 +156,8 @@ The mobility and communication models were adapted from [TOFL](https://github.co
 - Cores: 2
 - Memory: 4 GB
 - Storage: 64 GB
+
+The time values present in the next sessions for installing and executing the system are based on this configuration with a limited number of clients. To fully execute the results with the same parameters as presented in the paper, it might take hours.
 
 # Dependencies
 
@@ -174,12 +178,9 @@ This repository has the following dependencies:
 - seaborn 0.13.2
 - scikit-image 0.25.2
 
-
 # Security Concerns
 
-Our code only uses data from image datasets and libraries well-known on the literature. Therefore, this code does not impose any risk for the host during its execution.
-
-# Requirements
+Our code only uses data from image datasets and libraries well-known in the literature. Therefore, this code does not impose any risk for the host during its execution.
 
 # Installation
 
@@ -221,13 +222,13 @@ Accept all the conditions and choose the path to install miniconda3, by default,
 
 #### Activate conda environment
 
-Execute the command bellow to activate conda environment:
+Execute the command below to activate the conda environment:
 
 ```bash
 source ~/.bashrc
 ```
 
-### Installing the requirement of our code
+### Installing the requirements of our code (2 minutes)
 
 Clone this repository:
 
@@ -253,7 +254,7 @@ Create necessary directories to save the results:
 source scripts/build/paths.sh 
 ```
 
-### Genrating the mobility and communication data for the experiments 
+### Generating the mobility and communication data for the experiments (1 minute)
 
 Execute the command to generate random trips with SUMO with the given number of clients:
 
@@ -261,7 +262,7 @@ Execute the command to generate random trips with SUMO with the given number of 
 source scripts/run/raw/mobility.sh 
 ```
 
-Now, we process the raw results to transform it into a pandas dataframe, which will be used by our communiation model:
+Now, we process the raw results to transform them into a pandas dataframe, which will be used by our communiation model:
 
 ```bash 
 source scripts/run/processed/mobility.sh 
@@ -278,7 +279,7 @@ We process all the repeated communication results to generate a mean value of us
 source scripts/run/processed/communication.sh 
 ```
 
-Finally, we train clients' estimator with the throughtput data that we have generated previously:
+Finally, we train clients' estimator with the throughput data that we have generated previously:
 
 ```bash 
 source scripts/run/train_estimator.sh 
@@ -294,10 +295,9 @@ source scripts/run/experiments.sh
 
 The parameters were configured for a minimal execution. 
 
-
 # Experiments
 
-When executing the script above, we produces a single execute of all experiments. To fully generate, it take hours.
+When executing the script above, we execute a single run of all experiments. To fully generate, it takes hours.
 
 ## Experiment 1: Training efficiency
 
@@ -307,7 +307,7 @@ When executing the script above, we produces a single execute of all experiments
 
 ## Conclusion 
 
-If we were able to generate the selection and classification data, the test was successful. To reproduce the exact results in the paper, you must change the simulation by copying pasting the parameters as follows on the [config/config.yaml](config/config.yaml):
+If we were able to generate the selection and classification data, the test was successful. To reproduce the exact results in the paper, you must change the simulation by copying and pasting the parameters as follows on the [config/config.yaml](config/config.yaml):
 
 ```yaml
 environment: "cairos"
