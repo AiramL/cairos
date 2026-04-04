@@ -28,12 +28,13 @@ class EstimatorLSTM(Estimator):
         model_name = f"{model_path}/model_10_speed_{speed}.pt"
         
         model = LSTM()
-
         model.load_state_dict(torch.load(model_name, weights_only=True))
+
 
         super().__init__(model)
 
     def predict(self,data):
+        
         return float(self.model(data)[-1])
 
 class EstimatorARIMA(Estimator):

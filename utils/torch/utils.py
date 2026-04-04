@@ -32,6 +32,12 @@ def get_args_client():
                         type=int, 
                         default=0,
                         help="Speed identifier") 
+    
+    parser.add_argument("-bsr",
+                        "--base_station_range", 
+                        type=int, 
+                        default=600,
+                        help="Base station range in meters") 
 
     parser.add_argument("-nle",
                         "--number_of_local_epochs", 

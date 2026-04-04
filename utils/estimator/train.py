@@ -104,8 +104,10 @@ if __name__ == "__main__":
     cfg = load_config('config/config.yaml') 
 
     speeds = cfg["simulation"]["speed"]["index"] 
+    base_station_range = cfg["simulation"]["base_station"]["range"] 
 
     for speed in speeds:
 
-        tpu, tpd = load_tp(speed=speed)
+        tpu, tpd = load_tp(speed=speed,
+                           data_path=f"data/processed/{base_station_range}/speed")
         train(speed=speed)
