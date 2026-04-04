@@ -25,20 +25,25 @@ Our code has the following structure when cloned from GitHub:
 ├── architectures
 │   └── torch
 │       ├── custom_models.py
-│       ├── flisbee.py
 │       ├── implementation.py
 │       └── resnet.py
+├── communication
+│   └── base_stations.csv
 ├── config
 │   └── config.yaml
+├── figures
+│   └── system
+│       └── dynamic.png
 ├── generate_figures
-│   ├── accuracy.py
-│   └── efficiency.py
+│   ├── accuracy_error_bar.py
+│   ├── accuracy_line_error.py
+│   ├── efficiency_error.py
+│   └── motivation.py
 ├── LICENSE
 ├── README.md
 ├── requirements.txt
 ├── scripts
 │   ├── build
-│   │   ├── data.sh
 │   │   ├── dependencies.sh
 │   │   ├── env.sh
 │   │   └── paths.sh
@@ -49,17 +54,14 @@ Our code has the following structure when cloned from GitHub:
 │   │   ├── experiments.sh
 │   │   ├── jupyter.sh
 │   │   ├── processed
-│   │   │   ├── accuracy.sh
 │   │   │   ├── communication.sh
 │   │   │   ├── mobility.sh
 │   │   │   └── results.sh
 │   │   ├── raw
-│   │   │   ├── accuracy.sh
-│   │   │   ├── all_accuracy.sh
 │   │   │   ├── communication.sh
 │   │   │   └── mobility.sh
+│   │   ├── sbrc_experiments.sh
 │   │   ├── server.sh
-│   │   ├── test.sh
 │   │   └── train_estimator.sh
 │   ├── stop
 │   │   ├── docker.sh
@@ -67,12 +69,8 @@ Our code has the following structure when cloned from GitHub:
 │   │   └── torch
 │   │       └── clean.sh
 │   └── visualize
-│       ├── accuracy.sh
-│       ├── animation.sh
 │       ├── communication.sh
-│       ├── energy.sh
-│       ├── mobility.sh
-│       └── time2acc.sh
+│       └── mobility.sh
 ├── src
 │   ├── data_division
 │   │   └── split_data.py
@@ -83,19 +81,12 @@ Our code has the following structure when cloned from GitHub:
 │       │       ├── app.py
 │       │       ├── client.py
 │       │       └── Dockerfile
-│       ├── prototype
-│       │   ├── client.py
-│       │   ├── main.py
-│       │   ├── server.py
-│       │   └── utils
-│       │       ├── distillation.py
-│       │       └── load_federated_data.py
 │       └── server
 │           └── torch
 │               ├── app.py
 │               ├── Dockerfile
 │               └── strategy
-│                   ├── fedavg.py
+│                   └── fedavg.py
 └── utils
     ├── data
     │   ├── get_image_datasets.py
@@ -115,25 +106,15 @@ Our code has the following structure when cloned from GitHub:
     │   ├── poi.py
     │   └── results
     │       ├── processed
-    │       │   ├── accuracy.py
     │       │   ├── aggregate.py
     │       │   ├── communication.py
-    │       │   ├── epoch.py
     │       │   └── mobility.py
     │       └── raw
     │           └── communication.py
     ├── torch
     │   ├── load_federated_data.py
     │   └── utils.py
-    ├── utils.py
-    └── visualization
-        ├── accuracy.py
-        ├── animation.py
-        ├── communication.py
-        ├── energy.py
-        ├── epoch_delays.py
-        ├── legends.py
-        └── time2acc.py
+    └── utils.py
 ```
 During its execution, other paths will be created to store the log and results.
 
