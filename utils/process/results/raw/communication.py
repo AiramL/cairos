@@ -2,7 +2,9 @@ import csv
 
 import numpy as np
 import matplotlib.pyplot as plt
-from os import listdir
+from os import (
+        listdir,
+        makedirs)
 
 import threading
 import sys 
@@ -330,16 +332,21 @@ class Vehicle:
 
     # adding the disconnection condition
     def calculate_throughput(self):
+            
+        self.throughput_dl = (self.spectral_efficiency_dl * self.allocated_bandwidth_dl) * 1e-6
+        self.throughput_ul = (self.spectral_efficiency_ul * self.allocated_bandwidth_ul) * 1e-6
 
-        if self.distance_ul < self.base_station_range:
-        
-            self.throughput_dl = (self.spectral_efficiency_dl * self.allocated_bandwidth_dl) * 1e-6
-            self.throughput_ul = (self.spectral_efficiency_ul * self.allocated_bandwidth_ul) * 1e-6
-        
-        else:
+        #if self.distance_ul < self.base_station_range:
+       # 
+       #     self.throughput_dl = (self.spectral_efficiency_dl * self.allocated_bandwidth_dl) * 1e-6
+       #     self.throughput_ul = (self.spectral_efficiency_ul * self.allocated_bandwidth_ul) * 1e-6
+       # 
+       # else:
+#
+ #           self.throughput_dl = 0.0 
+ #           self.throughput_ul = 0.0
 
-            self.throughput_dl = (self.spectral_efficiency_dl * self.allocated_bandwidth_dl) * 1e-6 * (self.base_station_range / 2*self.distance_ul)
-            self.throughput_ul = (self.spectral_efficiency_ul * self.allocated_bandwidth_ul) * 1e-6 * (self.base_station_range / 2*self.distance_ul)
+
 
 # save to an output file
 def save_simulation_results_to_file(filename, vehicles, timestamp):
@@ -353,11 +360,15 @@ def save_simulation_results_to_file(filename, vehicles, timestamp):
                 vehicle.fading_dl, vehicle.fading_ul, vehicle.useful_throughput_dl, vehicle.useful_throughput_ul
             ])
             
-def simulate_v2x(input_data, filename="data/v2x_simulation.csv"):
+def simulate_v2x(input_data, 
+                 file_path:str, 
+                 filename:str="data/v2x_simulation.csv"):
+
     vehicles = {}
 
     # Create and initialize CSV file with headers
-    with open(filename, mode='w', newline='') as file:
+    makedirs(file_path, exist_ok=True)
+    with open(f"{file_path}/{filename}", mode='w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow([
             "Timestamp", "Node ID", "X Position", "Y Position", "Speed", "Distance DL",
@@ -384,71 +395,80 @@ def simulate_v2x(input_data, filename="data/v2x_simulation.csv"):
                 vehicle.useful_throughput_dl = calculate_useful_throughput(vehicle.throughput_dl)
                 vehicle.useful_throughput_ul = calculate_useful_throughput(vehicle.throughput_ul)
             # save the results for all vehicules.
-            save_simulation_results_to_file(filename, vehicles, timestamp)
+            save_simulation_results_to_file(f"{file_path}/{filename}", vehicles, timestamp)
             current_time = timestamp
         vehicles[node_id].update_position(x, y)
         vehicles[node_id].speed = speed
 
 
 if __name__ == "__main__":
-    # Run the simulation
-    # for file_name in listdir("mobility/raw"):
-    
-    #     input_data = read_input_file("mobility/raw/"+file_name)
-    
-    #     for index in range(30):
-    #         simulate_v2x(input_data,"data/raw/"+file_name[:-4]+"_v2x_simulation_"+str(index)+".csv")
-    
+
     THREAD = False
     SINGLE = True
-    speed = 2 
-    
+   
+    speeds = cfg['simulation']['speed']['index']
+    base_station_range = cfg['simulation']['base_station']['range']
+    mobility_repetitions = cfg['simulation']['mobility']['repetitions']
+    communication_repetitions = cfg['simulation']['communication']['repetitions']
 
-    if THREAD:
+    for speed in speeds: 
 
-        threads = {}
+        if THREAD:
 
-        for mobility in range(10):
-            print("processing mobility file ",mobility)
-            file_name = "mobility_"+str(mobility)+"_speed_"+str(speed)+".txt"
-            input_data = read_input_file("mobility/processed/"+file_name)
+            threads = {}
 
-            for index in range(30):
-                print("index ", index)
-                threads[str(index)+str(mobility)] = threading.Thread(target=simulate_v2x,
-                                                                 args=(input_data,
-                                                                       "data/raw/"+file_name[:-4]+"_simulation_"+str(index)+".csv"))
-                threads[str(index)+str(mobility)].start()
-            
-        for mobility in range(10):
-            for index in range(30): 
-                threads[str(index)+str(mobility)].join()
-    
-        print("processed finished")
+            for mobility in range(mobility_repetitions):
 
-    elif SINGLE:
-        mobility = sys.argv[1]
-        speed = sys.argv[2]
-        index = sys.argv[3]
-        print("processing mobility file ",mobility)
-        file_name = "mobility_"+str(mobility)+"_speed_"+str(speed)+".txt"
-        input_data = read_input_file("mobility/processed/"+file_name)
-        print("index ", index)
-        simulate_v2x(input_data,
-                     "data/raw/"+file_name[:-4]+"_simulation_"+str(index)+".csv")
+                print("processing mobility file ",mobility)
+                file_name = f"mobility_{mobility}_speed_{speed}.txt"
+                input_data = read_input_file("mobility/processed/{file_name}")
 
-    else:
-        for mobility in range(10):
-            print("processing mobility file ",mobility)
-            file_name = "mobility_"+str(mobility)+"_speed_"+str(speed)+".txt"
-            input_data = read_input_file("mobility/processed/"+file_name)
+                for index in range(communication_repetitions):
 
-            for index in range(30):
-                print("index ", index)
-                simulate_v2x(input_data,
-                             "data/raw/"+file_name[:-4]+"_simulation_"+str(index)+".csv")
-            
-        print("processed finished")
+                    print("index ", index)
+                    threads[str(index)+str(mobility)] = threading.Thread(target=simulate_v2x,
+                                                                     args=(input_data,
+                                                                           f"data/raw/{base_station_range}",
+                                                                           f"{file_name[:-4]}_simulation_{index}.csv"))
+                    threads[f"{index}{mobility}"].start()
+                
+            for mobility in range(mobility_repetitions):
+
+                for index in range(communication_repetitions): 
+
+                    threads[f"{index}{mobility}"].join()
+        
+            print("processed finished")
+
+        elif SINGLE:
+
+            mobility = sys.argv[1]
+            speed = sys.argv[2]
+            index = sys.argv[3]
+            print("processing mobility file ", mobility)
+            file_name = f"mobility_{mobility}_speed_{speed}.txt"
+            input_data = read_input_file(f"mobility/processed/{file_name}")
+            print("index ", index)
+            simulate_v2x(input_data,
+                         f"data/raw/{base_station_range}",
+                         f"{file_name[:-4]}_simulation_{index}.csv")
+
+        else:
+
+            for mobility in range(mobility_repetitions):
+
+                print("processing mobility file ",mobility)
+                file_name = f"mobility_{mobility}_speed_{speed}.txt"
+                input_data = read_input_file(f"mobility/processed/{file_name}")
+
+                for index in range(communication_repetitions):
+
+                    print("index ", index)
+                    simulate_v2x(input_data,
+                                 f"data/raw/{base_station_range}",
+                                 f"{file_name[:-4]}_simulation_{index}.csv")
+                
+            print("processed finished")
 
 
 

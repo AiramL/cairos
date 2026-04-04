@@ -57,7 +57,7 @@ logger = create_logger_server(log_path=server_log_path+aggregation)
 
 if torch.cuda.device_count():
 
-    memory_limit(logger)
+    limit_memory(logger)
 
 
 logger.debug(f"Execution path: {os.getcwd()}.")

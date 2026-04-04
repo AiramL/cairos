@@ -39,7 +39,7 @@ def train(speed=0,
                              shuffle=True, 
                              batch_size=8)
 
-    n_epochs = 40
+    n_epochs = 20
 
     for epoch in range(n_epochs):
     

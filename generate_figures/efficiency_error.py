@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
+from utils.loader import load_config
+
 def plot_efficiency_bar_with_error(file_path="results/server/flwr/training",
                                    dataset="CIFAR-10",
                                    strategies=["fedavg", "cairos_pe", "cairos_pb"],
@@ -12,7 +14,7 @@ def plot_efficiency_bar_with_error(file_path="results/server/flwr/training",
                                    execution=[5, 10, 20, 50],
                                    n_selected=[10, 30],
                                    i_epochs=10,
-                                   g_epochs=15,
+                                   rounds=15,
                                    scenario='equal',
                                    n_rep=5,  
                                    PLOT=False,
@@ -43,25 +45,28 @@ def plot_efficiency_bar_with_error(file_path="results/server/flwr/training",
         errors_to_plot = {s: [] for s in strategies}
 
         for strategy in strategies:
+            
             for timeout in execution:
+            
                 model = models[0]
                 alpha = alphas[0]
                 
                 rep_efficiencies = []
 
-                for rep in range(1, n_rep + 1):
+                for rep in range(n_rep):
             
                     try:
-                        path = f'{file_path}/{strategy}/{dataset}/{alpha}/{framework}/experiment_{rep}/{timeout}/{i_epochs}/{n_select}/{scenario}/{model}/aggregation.csv'
+                        path = f'{file_path}/{strategy}/{dataset}/{alpha}/{framework}/{timeout}/{i_epochs}/{n_select}/{scenario}/{rep}/{model}/aggregation.csv'
                         
                         data = pd.read_csv(path,header=None)
 
                         total = data.iloc[:, 1].sum()
-                        efficiency = total / (n_select * g_epochs) * 100
+                        efficiency = total / (n_select * rounds) * 100
 
                         rep_efficiencies.append(efficiency)
 
                     except FileNotFoundError:
+
                         print(f"Arquivo não encontrado: {path}")
                         rep_efficiencies.append(0) 
                 
@@ -111,5 +116,22 @@ def plot_efficiency_bar_with_error(file_path="results/server/flwr/training",
             plt.close() 
 
 if __name__ == "__main__":
-    
-    plot_efficiency_bar_with_error(n_rep=3)
+   
+    cfg = load_config()
+
+    dataset = cfg["simulation"]["federated_learning"]["client"]["dataset"]
+    strategy = cfg["simulation"]["federated_learning"]["server"]["strategy"]
+    n_selected = cfg["simulation"]["federated_learning"]["server"]["n_clients_fit"]
+    i_epochs = cfg["simulation"]["federated_learning"]["client"]["epochs"]
+    rounds = cfg["simulation"]["federated_learning"]["server"]["rounds"]
+    timeout = cfg["simulation"]["federated_learning"]["server"]["timeout"]
+    n_rep = 1
+
+    plot_efficiency_bar_with_error(dataset=dataset,
+                                   n_selected=[n_selected],
+                                   i_epochs=i_epochs,
+                                   strategies=[strategy],
+                                   execution=[timeout],
+                                   rounds=rounds,
+                                   n_rep=n_rep)
+

@@ -14,11 +14,11 @@ datasets:
                 classes: 43
                 features: 32,32,3
 simulation:
-        cars: 3
+        cars: 5
         mobility:
                 distance:
-                        x: 50
-                        y: 50       
+                        x: 1000
+                        y: 1000       
                 repetitions: 3
         communication:
                 repetitions: 10
@@ -36,7 +36,7 @@ simulation:
                         port: "8081"
                         timeout: 50
                         rounds: 3
-                        n_clients_fit: 3
+                        n_clients_fit: 5
                         strategy: "cairos_pe"
                         epochs_distribution: "equal"
                 client:
@@ -44,6 +44,6 @@ simulation:
                         epochs: 5
                         dataset: "CIFAR-10"
         base_station:
-                range: 500
+                range: 10000
                 positions: "communication/base_stations.csv"
 
