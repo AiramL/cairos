@@ -13,6 +13,7 @@ alpha_dirichlet=$(yq '.simulation.federated_learning.data.alpha' config/config.y
 timeout=$(yq '.simulation.federated_learning.server.timeout' config/config.yaml )
 strategy=$(yq '.simulation.federated_learning.server.strategy' config/config.yaml )
 distribution_type=$(yq '.simulation.federated_learning.server.epochs_distribution' config/config.yaml )
+base_station_range=$(yq '.simulation.base_station.range' config/config.yaml ) 
 
 mapfile -t speed_ids < <(yq '.simulation.speed.index[]' config/config.yaml)
 
@@ -24,6 +25,6 @@ do
 echo "Starting FL training with $framework server at $ip:$port, $n_clients clients executing $local_epochs local epochs, for $rounds rounds, selecting $n_clients_fit clients to fit the $model model for $local_epochs local epochs on the dataset $dataset using a datadistribution with alpha equals to $alpha_dirichlet, a maximun timeout of $timeout seconds, using the $strategy strategy, the $distribution_type local epochs distribution, and speed index $speed_id."
 
 
-source scripts/run/baremetal.sh "$strategy" "$alpha_dirichlet" "$model" "$port" "$framework" "$n_clients" "$dataset" "$rounds" "$local_epochs" "$n_clients_fit" "$distribution_type" "$timeout" "$speed_id" "$exec_id"
+source scripts/run/baremetal.sh "$strategy" "$alpha_dirichlet" "$model" "$port" "$framework" "$n_clients" "$dataset" "$rounds" "$local_epochs" "$n_clients_fit" "$distribution_type" "$timeout" "$speed_id" "$exec_id" "$base_station_range"
 	
 done
