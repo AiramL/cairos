@@ -304,20 +304,27 @@ When executing the script above, we execute a single run of all experiments. To 
 To visualize the resource efficiency during training, you can generate the visualization with the command below:
 
 ```python
-python -m generate_figures/
+python -m generate_figures.efficiency_error
 ```
 
 ## Experiment 2: Model's performance
 
-To visualize the training accuracy, you can generate the visualization with the command below:
+To visualize the evolution of test accuracy, you can generate the visualization with the command below:
 
 ```python
-python -m generate_figures/
+python -m generate_figures.accuracy_line_error
 ```
+
+To visualize the final accuracy varying the timeout, you can generate the visualization with the command below:
+
+```python
+python -m generate_figures.accuracy_error_bar
+```
+
 
 ## Conclusion 
 
-If we were able to generate the selection and classification data, the test was successful. To reproduce the exact results in the paper, you must change the simulation by copying and pasting the parameters as follows on the [config/config.yaml](config/config.yaml):
+If we were able to generate the selection and classification data, and visualize the three figures, the test was successful. To reproduce the exact results in the paper, you must change the simulation by copying and pasting the parameters as follows on the [config/config.yaml](config/config.yaml):
 
 ```yaml
 environment: "cairos"
