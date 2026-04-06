@@ -495,8 +495,3 @@ Verify if your machine has a GPU. If it does not have a GPU, rebuild the torch p
 torch==2.4.1 --index-url https://download.pytorch.org/whl/cpu
 torchvision==0.19.1 --index-url https://download.pytorch.org/whl/cpu
 ```
-
-## I found the following import error when running federated learnig: ImportError: /lib/x86\_64-linux-gnu/libstdc++.so.6: version 'CXXABI\_1.3.15' not found
-
-You are trying to execute the training on a GPU while using the CPU flags. Rebuild the torch packages withou the index url flags.
-
