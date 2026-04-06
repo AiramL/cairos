@@ -16,6 +16,7 @@ Vehicular Federated Learning (VFL) is applied to the training of AI models to en
 - [Experiments](#experiments)
 - [Paper](#paper)
 - [LICENSE](#license)
+- [FAQ](#faq)
 
 # Organization
 
@@ -243,15 +244,49 @@ Execute the command to generate random trips with SUMO with the given number of 
 source scripts/run/raw/mobility.sh 
 ```
 
+Expected output: 
+
+```bash 
+PHASE 1 -> Generating the grid topology
+Success.
+....... -> Copy netfile to the current directory
+....... -> Generate continuous rerouters
+....... -> Generating random flows for JTRROUTER
+....... -> Run SUMO for configuration Krauss 5 cars / iteration 0
+....... -> Generate tr file for configuration 5 cars / iteration 0
+One or more coordinates are negative, some applications might need strictly positive values. To avoid this use the option --shift.
+```
+
 Now, we process the raw results to transform them into a pandas dataframe, which will be used by our communiation model:
 
 ```bash 
 source scripts/run/processed/mobility.sh 
 ```
+
+Expected output: 
+
+```bash
+process finished 
+```
+
 The communication model receives as input clients' positions and calculates the throughput. This is executed several times:
 
 ```bash 
 source scripts/run/raw/communication.sh 
+```
+
+Expected output: 
+
+```bash 
+processing mobility file  0
+processing mobility file  2
+processing mobility file  1
+index  0
+index  0
+index  0
+[1]   Done                    python -m utils.process.results.raw.communication $execution $speed $index
+[2]-  Done                    python -m utils.process.results.raw.communication $execution $speed $index
+[3]+  Done                    python -m utils.process.results.raw.communication $execution $speed $index
 ```
 
 We process all the repeated communication results to generate a mean value of users' throughput:
@@ -260,10 +295,37 @@ We process all the repeated communication results to generate a mean value of us
 source scripts/run/processed/communication.sh 
 ```
 
+Expected output: 
+
+```bash 
+processing file  2
+processing file  0
+processing file  1
+processing finished
+processing finished
+processing finished
+[1]   Done                    python -m utils.process.results.processed.communication $speed $index
+[2]-  Done                    python -m utils.process.results.processed.communication $speed $index
+[3]+  Done                    python -m utils.process.results.processed.communication $speed $index
+```
+
 Finally, we train clients' estimator with the throughput data that we have generated previously:
 
 ```bash 
 source scripts/run/train_estimator.sh 
+```
+
+Expected output: 
+
+```bash
+torch.Size([7712, 5, 1]) torch.Size([7712, 5, 1])
+torch.Size([3797, 5, 1]) torch.Size([3797, 5, 1])
+Epoch 0: train RMSE 8.0887, test RMSE 6.7943
+Epoch 10: train RMSE 2.1793, test RMSE 2.1151
+tensor([[37.7809],
+        [39.3960],
+        [39.1443],
+        ..., 
 ```
 
 # Minimal Execution (20 minutes)
@@ -272,6 +334,42 @@ For executing CAIROS, there is a script:
 
 ```bash 
 source scripts/run/experiments.sh 
+```
+
+Expected output: 
+
+```bash
+Starting FL training with torch server at 127.0.0.1:8081, 5 clients executing 5 local epochs, for 3 rounds, selecting 5 clients to fit the RESNET10 model for 5 local epochs on the dataset CIFAR-10 using a datadistribution with alpha equals to 5.0, a maximun timeout of 50 seconds, using the cairos_pe strategy, the equal local epochs distribution, and speed index 0.
+Creating paths
+Files already downloaded and verified
+.
+.
+.
+INFO :      [ROUND 3]
+INFO :      configure_fit: strategy sampled 5 clients (out of 5)
+INFO :
+INFO :      Received: train message a133aafe-4557-4681-b414-2974a8a4e1df
+INFO :
+INFO :      Received: train message c366c5c8-adbd-4f1a-b981-f1dda7c9558b
+INFO :
+INFO :      Received: train message fb8564f8-9fb3-438c-8de0-c30f288f0d8f
+INFO :
+INFO :      Received: train message ea3f7a7c-c5ce-4e6c-a1a6-4a4c2ae3bbbd
+INFO :
+INFO :      Received: train message fbe3c91d-c34f-423a-a0ef-99506fe836dd
+INFO :      Sent reply
+INFO :      Sent reply
+INFO :      Sent reply
+INFO :      Sent reply
+INFO :      Sent reply
+.
+.
+.
+INFO :      Received: reconnect message 499f07f5-b828-4306-843c-ef6cf95861b4
+INFO :      Disconnect and shut down
+INFO :      Disconnect and shut down
+INFO :      Disconnect and shut down
+INFO :      Disconnect and shut down
 ```
 
 The parameters were configured for a minimal execution. 
@@ -288,6 +386,12 @@ To visualize the resource efficiency during training, you can generate the visua
 python -m generate_figures.efficiency_error
 ```
 
+Expected output: 
+
+```bash 
+file: figures/bar_efficiency_avg_iepochs_5_n_selec_5_pt.png
+```
+
 ## Experiment 2: Model's performance
 
 To visualize the evolution of test accuracy, you can generate the visualization with the command below:
@@ -296,12 +400,23 @@ To visualize the evolution of test accuracy, you can generate the visualization 
 python -m generate_figures.accuracy_line_error
 ```
 
+Expected output: 
+
+```bash
+file: figures/accuracy_line_timeout_50_n_selec_10_pt_avg_std.png 
+```
+
 To visualize the final accuracy varying the timeout, you can generate the visualization with the command below:
 
 ```python
 python -m generate_figures.accuracy_error_bar
 ```
 
+Expected output: 
+
+```bash
+file: figures/bar_accuracy_iepochs_5_n_selec_5_pt_avg_std.png 
+```
 
 ## Conclusion 
 
@@ -369,3 +484,19 @@ Cite this work as:
 # LICENSE
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+# FAQ
+
+## My training is too slow, what should I do? 
+
+Verify if your machine has a GPU. If it does not have a GPU, rebuild the torch packges using the following lines:
+
+```
+torch==2.4.1 --index-url https://download.pytorch.org/whl/cpu
+torchvision==0.19.1 --index-url https://download.pytorch.org/whl/cpu
+```
+
+## I found the following import error when running federated learnig: ImportError: /lib/x86\_64-linux-gnu/libstdc++.so.6: version 'CXXABI\_1.3.15' not found
+
+You are trying to execute the training on a GPU while using the CPU flags. Rebuild the torch packages withou the index url flags.
+

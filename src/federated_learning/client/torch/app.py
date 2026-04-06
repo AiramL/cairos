@@ -36,6 +36,7 @@ scenario = args.scenario                            # all_in_one
 original_training = args.original_training          # False
 max_timeout =  args.max_timeout                     # False
 estimation_per_batch = args.estimation_per_batch    # False
+base_station_range = args.base_station_range        # 10000
 
 import torch
 import flwr as fl
@@ -97,7 +98,7 @@ testloader = torch.utils.data.DataLoader(test_dataset,
                                          pin_memory=True)
 
 # load through put dataframe
-df = pd.read_csv(f"data/processed/speed{speed_id}/{exec_id}.csv") 
+df = pd.read_csv(f"data/processed/{base_station_range}/speed{speed_id}/{exec_id}.csv") 
 throughput_df = df[df['Node ID'] == client_id]
 
 logger.debug("Building model")
