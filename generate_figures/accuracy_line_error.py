@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
+from utils.loader import load_config
+
 def accuracy_line_plot_grouped_with_std(file_path="results/clients/flwr/classification",
                                         dataset="CIFAR-10",
                                         strategies=["fedavg", "cairos_pb", "cairos_pe"],
@@ -10,7 +12,7 @@ def accuracy_line_plot_grouped_with_std(file_path="results/clients/flwr/classifi
                                         framework="torch",
                                         models=["RESNET10"],
                                         execution=10,
-                                        n_rep=3,
+                                        n_rep=1,
                                         cid=1,
                                         n_selected=[10],
                                         i_epochs=10,
@@ -53,13 +55,11 @@ def accuracy_line_plot_grouped_with_std(file_path="results/clients/flwr/classifi
                     
                     all_client_data = [] 
                     
-                    # --- ITERAÇÃO SOBRE CLIENTES ---
-                    for rep in range(1,n_rep+1):
+                    for rep in range(n_rep):
 
                         try:
-                            # Ajuste o path conforme sua estrutura real
-                            path = f'{file_path}/{strategy}/{dataset}/{alpha}/{framework}/experiment_{rep}/{execution}/{n_select}/{i_epochs}/equal/{model}/{cid}'
                             
+                            path = f'{file_path}/{strategy}/{dataset}/{alpha}/{framework}/{execution}/{n_select}/{i_epochs}/equal/{rep}/{model}/{cid}'
                             if os.path.exists(path):
                                 
                                 data = pd.read_csv(path, header=None)
@@ -71,41 +71,33 @@ def accuracy_line_plot_grouped_with_std(file_path="results/clients/flwr/classifi
 
                             continue
 
-                    # --- PROCESSAMENTO E PLOTAGEM ---
                     if all_client_data:
 
                         min_len = min(len(x) for x in all_client_data)
                         
-                        # Trunca os dados para o tamanho mínimo comum (caso algum cliente tenha rodado menos)
                         trimmed_data = [x[:min_len] for x in all_client_data]
-                        
-                        # Cria matriz (Linhas = Clientes, Colunas = Rodadas)
-                        data_matrix = np.array(trimmed_data) * 100 # Converte para %
-                        
-                        # Calcula Média e Desvio Padrão por Rodada (axis=0)
+                        data_matrix = np.array(trimmed_data) * 100 
                         mean_acc = np.mean(data_matrix, axis=0)
                         std_acc = np.std(data_matrix, axis=0)
                         
                         epochs = range(1, min_len + 1)
 
-                        # Plota a LINHA DA MÉDIA
                         plt.plot(epochs,
                                  mean_acc,
-                                 linewidth=3, # Linha um pouco mais fina para ver melhor
+                                 linewidth=3, 
                                  label=labels[strategy],
                                  color=colors[strategy],
                                  linestyle=style[strategy])
                         
-                        # Plota a ÁREA DE ERRO (Sombra)
                         plt.fill_between(epochs, 
-                                         mean_acc - std_acc, # Limite inferior
-                                         mean_acc + std_acc, # Limite superior
+                                         mean_acc - std_acc,
+                                         mean_acc + std_acc, 
                                          color=colors[strategy], 
-                                         alpha=0.2) # Transparência para ver sobreposição
+                                         alpha=0.2) 
                     else:
+
                         print(f"Nenhum dado encontrado para estratégia {strategy}")
 
-        # Formatação do gráfico
         plt.xlabel(xlabel_text, fontsize=26)
         plt.ylabel(ylabel_text, fontsize=26)
 
@@ -114,17 +106,19 @@ def accuracy_line_plot_grouped_with_std(file_path="results/clients/flwr/classifi
         plt.grid(True, linestyle='--', alpha=0.6)
         plt.legend(fontsize=26)
 
-        # Garante diretório
         os.makedirs("figures", exist_ok=True)
         
         filename = f"figures/accuracy_line_timeout_{execution}_n_selec_{n_select}_{language}_avg_std.png"
         plt.savefig(filename, dpi=300, bbox_inches='tight')
-        print(f"Gráfico salvo: {filename}")
 
         if PLOT:
             plt.show()
 
 if __name__ == "__main__":
+    
+    cfg = load_config()
 
-    accuracy_line_plot_grouped_with_std(execution=10)
-    accuracy_line_plot_grouped_with_std(execution=50)
+    accuracy_line_plot_grouped_with_std(execution=cfg['simulation']['federated_learning']['server']['timeout'],
+                                        n_selected=[cfg['simulation']['federated_learning']['server']['n_clients_fit']],
+                                        strategies=[cfg['simulation']['federated_learning']['server']['strategy']],
+                                        i_epochs=cfg['simulation']['federated_learning']['client']['epochs'])
