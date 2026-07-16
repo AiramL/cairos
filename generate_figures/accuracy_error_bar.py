@@ -29,34 +29,41 @@ def accuracy_bar_plot_grouped_with_std(file_path="results/clients/flwr/classific
               "cairos_pe": "k"}
 
     if language == "en":
+
         xlabel_text = "Timeout (s)"
         ylabel_text = "Final Accuracy (%)"
+
     elif language == "pt":
+
         xlabel_text = "Tempo Máximo (s)"
         ylabel_text = "Acurácia (%)"
 
     for n_select in n_selected:
+
         plt.figure(figsize=(14, 10))
 
         means_to_plot = {s: [] for s in strategies}
         stds_to_plot = {s: [] for s in strategies}
 
         for strategy in strategies:
+
             for timeout in execution:
+
                 model = models[0]
                 alpha = alphas[0]
                 
                 client_accuracies = [] 
 
-                for rep in range(n_rep):
+                for rep in range(1,n_rep+1):
 
                     try:
                         
-                        path = f'{file_path}/{strategy}/{dataset}/{alpha}/{framework}/{timeout}/{i_epochs}/{n_select}/equal/{rep}/{model}/{cid}'
+                        path = f'{file_path}/{strategy}/{dataset}/{alpha}/{framework}/experiment_{rep}/{timeout}/{i_epochs}/{n_select}/equal/{model}/{cid}'
                         
                         if os.path.exists(path):
+
                             data = pd.read_csv(path, header=None)
-                            final_acc = data.iloc[-1, 1] * 100
+                            final_acc = data.max()[1] * 100
                             client_accuracies.append(final_acc)
                         
                         else:
@@ -80,8 +87,12 @@ def accuracy_bar_plot_grouped_with_std(file_path="results/clients/flwr/classific
         x = np.arange(len(execution))
         width = 0.25
         multiplier = 0
+        
+        print(means_to_plot)
+        print(stds_to_plot)
 
         for strategy in strategies:
+
             accuracies = means_to_plot[strategy]
             errors = stds_to_plot[strategy] 
             
@@ -124,11 +135,11 @@ if __name__ == "__main__":
     i_epochs = cfg["simulation"]["federated_learning"]["client"]["epochs"]
     rounds = cfg["simulation"]["federated_learning"]["server"]["rounds"]
     timeout = cfg["simulation"]["federated_learning"]["server"]["timeout"]
-    n_rep = 1
+    n_rep = 3
 
     accuracy_bar_plot_grouped_with_std(strategies=[strategy],
                                        dataset=dataset,
                                        n_selected=[n_selected],
                                        i_epochs=i_epochs,
                                        n_rep=n_rep,
-                                       execution=[timeout])
+                                       execution=[5,10,20,50])

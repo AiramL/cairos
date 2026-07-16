@@ -2,7 +2,7 @@ import torch
 
 import flwr as fl
 from collections import OrderedDict
-
+import numpy as np
 
 from math import floor
 from timeit import default_timer as timer
@@ -13,7 +13,7 @@ from architectures.torch.implementation import (
         evaluate)
 
 from utils.estimator.architecture import EstimatorLSTM
-from utils.torch.load_federated_data import CustomDataset
+from utils.torch.custom_dataset import CustomDataset
 
 # Federated Learning Client
 class FLClient(fl.client.NumPyClient):
@@ -42,6 +42,9 @@ class FLClient(fl.client.NumPyClient):
                  original_training=False,
                  estimation_per_batch=False,
                  real_timer=False,
+                 deterministic_computational_delay=False,
+                 computational_capacity=1000,
+                 model_flops=1000,
                  **kwargs):
         
         # paths
@@ -55,6 +58,7 @@ class FLClient(fl.client.NumPyClient):
         self.logger = logger
         self.global_epoch = 0
         self.real_timer = real_timer
+        self.computational_capacity_variance = 0.5
 
         # identifiers
         self.cid = cid
@@ -63,7 +67,10 @@ class FLClient(fl.client.NumPyClient):
         self.optimizer = optimizer
         self.criterion = criterion
         self.device = device
+        self.computational_capacity = computational_capacity
+        self.model_flops = model_flops
         self.scheduler = scheduler
+        self.deterministic_computational_delay = deterministic_computational_delay
 
         # client's data
         self.trainloader = trainloader 
@@ -78,9 +85,11 @@ class FLClient(fl.client.NumPyClient):
         # mobility parameters
         self.throughput = throughput
 
-        # computing parameters
-        self.batch_time = 0.1
-        self.epoch_time = self.batch_time * len(self.trainloader)
+        # computing parameters for deterministic model
+        if self.deterministic_computational_delay:
+            
+            self.batch_time = 0.1
+            self.epoch_time = self.get_epoch_computational_delay()
     
         # communication parameters
         self.estimator = EstimatorLSTM()
@@ -99,8 +108,7 @@ class FLClient(fl.client.NumPyClient):
                               for p in list(model.parameters()) + list(model.buffers())) / 1024
 
         self.logger.debug(f'starting client with id {self.cid}, for model {self.model_name}')
-        self.logger.debug(f'epoch time: {self.epoch_time}, batch size: {batch_size}, batch time : {self.batch_time}, size train: {len(self.trainloader.dataset)}')
-    
+            
     def update_past_delays(self,
                            state):
 
@@ -123,6 +131,50 @@ class FLClient(fl.client.NumPyClient):
                       time):
         
         return int(time/self.message_period)
+
+    # simulate the computation delay for a batch
+    def get_batch_computational_delay(self):
+
+        if self.deterministic_computational_delay:
+
+            return self.batch_time
+        
+        else:
+            
+            return max(0.01, 
+                       np.random.normal(self.model_flops / self.computational_capacity, 
+                                        self.computational_capacity_variance))
+
+
+    # simulate the computation delay for an epoch
+    def get_epoch_computational_delay(self):
+
+        if self.deterministic_computational_delay:
+
+            return self.batch_time * len(self.trainloader)
+        
+        else:
+            
+            return max(0.01, 
+                       np.random.normal(self.model_flops / self.computational_capacity, 
+                                        self.computational_capacity_variance)) * len(self.trainloader)
+
+
+    # use a gaussian generator to estimate the computation delay for a batch
+    def get_batch_estimated_computational_delay(self):
+
+        return max(0.01, 
+                   np.random.normal(self.model_flops / self.computational_capacity, 
+                                    self.computational_capacity_variance))
+
+
+    # use a gaussian generator to estimate the computation delay for an epoch
+    def get_epoch_estimated_computational_delay(self):
+        
+        return max(0.01, 
+                    np.random.normal(self.model_flops / self.computational_capacity, 
+                                     self.computational_capacity_variance)) * len(self.trainloader)
+
 
 
     def send_real_data_chunk(self, 
@@ -286,6 +338,7 @@ class FLClient(fl.client.NumPyClient):
 
                     self.logger.debug(f'data batch size less than 2: {len(data[0])}')
 
+                self.batch_time = self.get_batch_computational_delay()
                 current_time += self.batch_time
                 self.logger.debug(f'new current time: {current_time}')
                 state = self.time_to_state(current_time)
@@ -294,14 +347,15 @@ class FLClient(fl.client.NumPyClient):
                 # estimating communication delay for the next batch
                 if self.estimation_per_batch:
                     
-                    current_time += self.batch_time
+                    estimated_delay = self.get_batch_estimated_computational_delay()
+                    current_time += estimated_delay
                     delay = self.get_estimated_delay(current_time)
                     self.logger.debug(f'estimated delay per batch: {delay}')
                     self.logger.debug(f'total estimated delay: {(delay + current_time) * self.error_tolerance }, timeout: {self.timeout}')
                     
                     if (delay + current_time) * self.error_tolerance > self.timeout:
                     
-                        current_time -= 2*self.batch_time
+                        current_time -= estimated_delay
                         stop = True
                         break
             
@@ -309,14 +363,15 @@ class FLClient(fl.client.NumPyClient):
             if not self.estimation_per_batch:
 
                 # estimating communication delay for the next epoch
-                current_time += 2*self.epoch_time
+                estimated_delay = self.get_epoch_estimated_computational_delay()
+                current_time += estimated_delay
                 delay = self.get_estimated_delay(current_time)
                 self.logger.debug(f'estimated delay per epoch: {delay}')
                 self.logger.debug(f'total estimated delay for next epoch: {delay * self.error_tolerance + current_time}, timeout: {self.timeout}')
 
                 if (delay + current_time) * self.error_tolerance > self.timeout:
                     
-                    current_time -= 2*self.epoch_time
+                    current_time -= estimated_delay
 
                     break
 
@@ -340,9 +395,8 @@ class FLClient(fl.client.NumPyClient):
 
         else:
             
-            # compute the time to download the model
-            # fit_start = self.get_real_delay(current_time)
-            fit_start = 0 # assuming we only start training when clients received the model
+            # assuming we only start training when clients received the model
+            fit_start = 0 
     
         self.logger.debug('calculating the timeout of this epoch')
         self.timeout = self.max_timeout - fit_start 
@@ -364,10 +418,16 @@ class FLClient(fl.client.NumPyClient):
                          self.device,
                          self.trainloader,
                          self.logger)
+            
+            epoch_time = 0
 
-            current_time = self.i_epochs * self.epoch_time + fit_start
+            for _ in range(self.i_epochs):
+
+                epoch_time += self.get_epoch_computational_delay()
+
+            current_time = epoch_time + fit_start
             self.logger.debug(f'computation time: {current_time}, \
-                                epoch time: {self.epoch_time}, \
+                                epoch time: {epoch_time}, \
                                 fit start: {fit_start}')
 
         else:

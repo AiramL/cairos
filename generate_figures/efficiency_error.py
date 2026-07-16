@@ -53,10 +53,10 @@ def plot_efficiency_bar_with_error(file_path="results/server/flwr/training",
                 
                 rep_efficiencies = []
 
-                for rep in range(n_rep):
+                for rep in range(1, n_rep+1):
             
                     try:
-                        path = f'{file_path}/{strategy}/{dataset}/{alpha}/{framework}/{timeout}/{i_epochs}/{n_select}/{scenario}/{rep}/{model}/aggregation.csv'
+                        path = f'{file_path}/{strategy}/{dataset}/{alpha}/{framework}/experiment_{rep}/{timeout}/{i_epochs}/{n_select}/{scenario}/{model}/aggregation.csv'
                         
                         data = pd.read_csv(path,header=None)
 
@@ -76,6 +76,10 @@ def plot_efficiency_bar_with_error(file_path="results/server/flwr/training",
         x = np.arange(len(execution))
         width = 0.25
         multiplier = 0
+        
+        print(means_to_plot)
+        print(errors_to_plot)
+
 
         for strategy in strategies:
 
@@ -111,8 +115,11 @@ def plot_efficiency_bar_with_error(file_path="results/server/flwr/training",
         plt.savefig(filename, dpi=300, bbox_inches='tight')
 
         if PLOT:
+
             plt.show()
+
         else:
+
             plt.close() 
 
 if __name__ == "__main__":
@@ -124,14 +131,13 @@ if __name__ == "__main__":
     n_selected = cfg["simulation"]["federated_learning"]["server"]["n_clients_fit"]
     i_epochs = cfg["simulation"]["federated_learning"]["client"]["epochs"]
     rounds = cfg["simulation"]["federated_learning"]["server"]["rounds"]
-    timeout = cfg["simulation"]["federated_learning"]["server"]["timeout"]
-    n_rep = 1
+    n_rep = 3
 
     plot_efficiency_bar_with_error(dataset=dataset,
                                    n_selected=[n_selected],
                                    i_epochs=i_epochs,
                                    strategies=[strategy],
-                                   execution=[timeout],
+                                   execution=[5,10,20,50],
                                    rounds=rounds,
                                    n_rep=n_rep)
 

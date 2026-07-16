@@ -14,7 +14,12 @@ import numpy as np
 from pickle import load
 from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
+from torch.utils.data  import Subset
 
+
+from torchvision import (
+        datasets, 
+        transforms)
 
 def load_data_client(dataset_name='CIFAR-10',   # dataset used on the system
                      clientID=1,                # client identifier
@@ -71,9 +76,6 @@ def load_data_client(dataset_name='CIFAR-10',   # dataset used on the system
                 X = np.concatenate((X,X_train_current,X_test_current))
                 Y = np.concatenate((Y,Y_train_current,Y_test_current))
     
-        # normalize the data
-        X /= 255 
-
         # reshape MNIST and FMNIST
         if dataset_name == "MNIST" or dataset_name == "FMNIST":
             
@@ -91,24 +93,152 @@ def load_data_client(dataset_name='CIFAR-10',   # dataset used on the system
     
     elif distribution == "dirichlet":
 
-        data_path = f"datasets/{dataset_name}/distributions/nclients_{numClients}/alpha_{alpha}/cliente_{clientID}.pkl"
+        data_path = f"datasets/{dataset_name}/distributions/nclients_{numClients}/alpha_{alpha}/client_{clientID}.pkl"
 
         with open(data_path ,"rb") as reader:
             
             data = load(reader)
 
-        return data[0], data[1], data[2], data[3]
+        if clientID != 0:
+
+            reduced_data = Subset(data[1], range(100))
+            data[1] = reduced_data
+        
+        return data
 
 
-def load_data_server(dataset_name,          # dataset used on the system
-                     numClients,            # number of clients
-                     alpha=0.5):            # dirichlet distribution parameter
-
+def load_data_server_list(dataset_name:str,      # dataset used on the system
+                          numClients,            # number of clients
+                          alpha=0.5,             # dirichlet distribution parameter
+                          percentage=1.0):       # percentage of data used on the knowledge distillation     
+    
     x_train = np.array([])
     y_train = np.array([])
-    x_test  = np.array([])
-    y_test  = np.array([])
+    
+    for clientID in range(numClients):
+        
+        data_path = f"datasets/{dataset_name}/distributions/nclients_{numClients}/alpha_{alpha}/cliente_{clientID}.pkl"
 
+        with open(data_path ,"rb") as reader:
+            
+            data = load(reader)
+        
+        if len(x_train):
+            
+            x_train = np.append(x_train, 
+                                data[0], 
+                                axis=0)
+            
+            y_train = np.append(y_train, 
+                                data[2], 
+                                axis=0)
+            
+        else:
+            
+            x_train = data[0]
+            y_train = data[2]
+            
+            x_test  = data[1]
+            y_test  = data[3]
+
+    if percentage < 1:
+
+        rng = np.random.default_rng(seed=42)
+        indexes = rng.choice(len(x_train),
+                             int(percentage*len(x_train)),
+                             replace=False)   
+    
+        x_train = x_train[indexes] 
+        y_train = y_train[indexes]
+
+    return x_train, x_test, y_train, y_test
+
+def load_data_server_dataset(dataset_name:str,      # dataset used on the system
+                             numClients:int,        # number of clients
+                             alpha:float=0.5,       # dirichlet distribution parameter
+                             percentage=1.0):       # percentage of data used on the knowledge distillation     
+   
+    datasets = []
+
+    for clientID in range(numClients):
+        
+        data_path = f"datasets/{dataset_name}/distributions/nclients_{numClients}/alpha_{alpha}/cliente_{clientID}.pkl"
+
+        with open(data_path ,"rb") as reader:
+            
+            data = load(reader)
+        
+        datasets.append(data[0])
+
+    train = torch.utils.data.ConcatDataset(datasets)
+    
+    test = data[1]
+
+    return train, test
+
+def load_centralized_data(dataset_name):
+
+    if dataset_name == "CIFAR-10":
+        
+        transform_train = transforms.Compose([transforms.RandomCrop(32, padding=4),
+                                              transforms.RandomHorizontalFlip(),
+                                              transforms.ToTensor(),
+                                              transforms.Normalize((0.4914, 0.4822, 0.4465), 
+                                                                   (0.2023, 0.1994, 0.2010)),
+            ])
+
+        transform_test = transforms.Compose([transforms.ToTensor(),
+                                             transforms.Normalize((0.4914, 0.4822, 0.4465), 
+                                                                  (0.2023, 0.1994, 0.2010)),
+            ])
+
+        train_data = datasets.CIFAR10(root=f'datasets/{dataset_name}', 
+                                      train=True, 
+                                      download=True, 
+                                      transform=transform_train)
+        
+        test_data = datasets.CIFAR10(root=f'datasets/{dataset_name}', 
+                                     train=False, 
+                                     download=True, 
+                                     transform=transform_test)
+
+    else:
+
+        raise ValueError('Dataset non implemented')
+
+    return train_data, test_data
+
+def load_centralized_data_from_fl_dataset(dataset_name:str,      # dataset used on the system
+                                          numClients:int,        # number of clients
+                                          alpha:float=0.5):      # dirichlet distribution parameter
+   
+
+    datasets = []
+
+    for clientID in range(numClients):
+        
+        data_path = f"datasets/{dataset_name}/distributions/nclients_{numClients}/alpha_{alpha}/cliente_{clientID}.pkl"
+
+        with open(data_path ,"rb") as reader:
+            
+            data = load(reader)
+        
+        datasets.append(data[0])
+
+    train = torch.utils.data.ConcatDataset(datasets)
+    
+    test = data[1]
+
+    return train, test
+
+
+def load_centralized_data_from_fl_list(dataset_name,          # dataset used on the system
+                                       numClients,            # number of clients
+                                       alpha=5.0):            # dirichlet distribution parameter
+    
+    x_train = np.array([])
+    y_train = np.array([])
+    
     for clientID in range(numClients):  
 
         data_path = f"datasets/{dataset_name}/distributions/nclients_{numClients}/alpha_{alpha}/cliente_{clientID}.pkl"
@@ -118,32 +248,34 @@ def load_data_server(dataset_name,          # dataset used on the system
             data = load(reader)
         
         if len(x_train):
+
+            x_train = np.append(x_train, 
+                                data[0], 
+                                axis=0)
             
-            np.append(x_train, data[0])
-            np.append(x_test, data[1])
-            np.append(y_train, data[2])
-            np.append(y_test, data[3])
-        
+            y_train = np.append(y_train, 
+                                data[2], 
+                                axis=0)
+            
         else:
             
             x_train = data[0]
-            x_test  = data[1]
             y_train = data[2]
+            
+            x_test  = data[1]
             y_test  = data[3]
     
-    return x_train, y_train, x_test, y_test
+    x_train = np.array(x_train,
+                       dtype=np.float32)
+        
+    y_train = np.array(y_train,
+                       dtype=np.float32)
+        
+    x_test = np.array(x_test,
+                      dtype=np.float32)
+        
+    y_test = np.array(y_test,
+                      dtype=np.float32)
+    
+    return x_train, x_test, y_train, y_test
 
-class CustomDataset(torch.utils.data.Dataset):
-
-    def __init__(self, x, y):
-
-        self.x = torch.from_numpy(x).float().permute(0, 3, 1, 2)
-        self.y = torch.from_numpy(y).long()
-
-    def __len__(self):
-
-        return len(self.y)
-
-    def __getitem__(self, index):
-
-        return self.x[index], self.y[index]

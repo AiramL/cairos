@@ -18,9 +18,6 @@ from utils.torch.utils import (
         create_logger_server,
         limit_memory)
 
-from utils.torch.load_federated_data import (
-        load_data_server,
-        CustomDataset)
 from architectures.torch.implementation import (
         build_model,
         get_weights,

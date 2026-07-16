@@ -19,7 +19,7 @@ def accuracy_plot_varying_selection(file_path="results/clients/flwr/classificati
                         n_selected=[1,10,25,50],
                         i_epochs=5,
                         PLOT=False, 
-                        language="pt"):
+                        language="en"):
     
     plt.figure(figsize=(14, 10))
  
@@ -264,7 +264,7 @@ def accuracy_bar_plot_varying_selection(file_path="results/clients/flwr/classifi
                         n_selected=[1,10,25,50],
                         i_epochs=5,
                         PLOT=False, 
-                        language="pt"):
+                        language="en"):
     
     plt.figure(figsize=(14, 10))
  

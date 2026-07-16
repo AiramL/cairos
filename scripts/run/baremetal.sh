@@ -39,7 +39,7 @@ else
 fi
 
 bs=128
-fixed_n_clients=200
+fixed_n_clients=40
 
 server_log_path="logs/server/flwr/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$execution/$model/"
 server_model_path="models/server/flwr/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$execution/$model/"
@@ -53,8 +53,10 @@ mkdir -p $time_path_server
 epochs_list=$(python -m utils.epochs_distributions $numClients $i_epochs $scenario)
 epochs_array=($epochs_list)
 
-[ ! -d "datasets/$dataset/distributions/nclients_$numClients/alpha_$alpha/"  ] && python src/data_division/split_data.py $fixed_n_clients $dataset $alpha
+[ ! -d "datasets/$dataset/distributions/nclients_$numClients/alpha_$alpha/"  ] && python -m src.data_division.split_data $numClients $dataset $alpha 
+[ ! -d "datasets/$dataset/distributions/nclients_$fixed_n_clients/alpha_$alpha/"  ] && python -m src.data_division.split_data $fixed_n_clients $dataset $alpha
 
+wait 
 
 echo "Starting server $server"
 

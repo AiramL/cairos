@@ -43,10 +43,7 @@ import flwr as fl
 
 from architectures.torch.implementation import build_model
 
-from utils.torch.load_federated_data import (
-        load_data_client,
-        CustomDataset)
-
+from utils.torch.load_federated_data import load_data_client
 from utils.loader import load_config
 from .client import FLClient
 
@@ -64,36 +61,23 @@ if torch.cuda.device_count():
 
     limit_memory(logger)
 
-
 logger.debug("Loading dataset")
-x_train, x_test, y_train, y_test = load_data_client(dataset_name=DATASET, 
-                                                    clientID=client_id, 
-                                                    numClients=num_clients, 
-                                                    alpha=alpha,
-                                                    trPer=ts,
-                                                    distribution="dirichlet") 
+train_dataset, test_dataset = load_data_client(dataset_name=DATASET,
+                                               clientID=client_id,
+                                               numClients=num_clients,
+                                               alpha=alpha,
+                                               trPer=ts,
+                                               distribution="dirichlet")
 
-
-if DATASET == "SIGN":
-
-    x_train = np.transpose(x_train, (0, 3, 2, 1))
-    x_test = np.transpose(x_test, (0, 3, 2, 1))
-
-train_dataset = CustomDataset(x_train, 
-                              y_train)
-
-test_dataset = CustomDataset(x_test, 
-                             y_test)
-
-trainloader = torch.utils.data.DataLoader(train_dataset, 
-                                          batch_size=bs, 
-                                          shuffle=False,
+trainloader = torch.utils.data.DataLoader(train_dataset,
+                                          batch_size=bs,
+                                          shuffle=True,
                                           num_workers=0,
                                           pin_memory=True)
 
-testloader = torch.utils.data.DataLoader(test_dataset, 
-                                         batch_size=bs, 
-                                         shuffle=False,
+testloader = torch.utils.data.DataLoader(test_dataset,
+                                         batch_size=bs,
+                                         shuffle=True,
                                          num_workers=0,
                                          pin_memory=True)
 
@@ -133,6 +117,8 @@ fl.client.start_client(server_address=f'{SERVER_IP}:{SERVER_PORT}',
                                        estimation_per_batch=estimation_per_batch,
                                        original_training=original_training,
                                        real_timer=False,
-                                       device=device).to_client(),
+                                       device=device,
+                                       computational_capacity=1000,
+                                       model_flops=1000).to_client(),
                                        grpc_max_message_length=message_length)
 

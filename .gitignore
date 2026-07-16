@@ -5,6 +5,10 @@ __pycache__/
 datasets/
 models/
 logs/
+data/
+results/
+mobility/
+*old*
 
 # C extensions
 *.so

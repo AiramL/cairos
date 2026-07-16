@@ -1,26 +1,16 @@
-import gc
 import os
+import copy
 import threading
-
-import flwr as fl
-
-from torch.utils.data import TensorDataset, DataLoader
-
-from utils.utils import get_args_client
-from utils.utils import create_logger
-from utils.models import build_model
-from utils.load_federated_data import load_data, CustomDataset
-from utils.config import system_models_ids
-from client import FLClient
-
-
+import pandas as pd
+import numpy as np
+from time import sleep
+from utils.torch.utils import get_args_client
 
 # Get parameters
 args = get_args_client()
 
 # Set Parameters
                                                     # default parameters
-client_id = args.client_id                          # 1
 i_epochs = args.number_of_local_epochs              # 5
 bs = args.batch_size                                # 32
 ts = args.test_size                                 # 0.2
@@ -38,101 +28,118 @@ MODEL = args.model                                  # MOBILENET
 num_clients = args.num_clients                      # 10
 num_selected_clients = args.num_clients_fit         # 10
 alpha = args.alpha                                  # 1
+exec_id = args.exec_id                              # 0
 strategy = args.strategy                            # fedavg
+scenario = args.scenario                            # all_in_one
+original_training = args.original_training          # False
+max_timeout =  args.max_timeout                     # False
+estimation_per_batch = args.estimation_per_batch    # False
+
+import torch
+import flwr as fl
+
+from architectures.torch.implementation import build_model
+
+from utils.torch.load_federated_data import (
+        load_data_client,
+        CustomDataset)
+
+from utils.loader import load_config
+from .client import FLClient
+
+from utils.torch.utils import create_logger_client
+
+cfg = load_config('config/config.yaml')
 
 
 message_length = 800 * 1024 * 1024
 
 threads = []
+parameters = {}
+
 
 for index in range(num_clients):
 
-    logger = create_logger(LOG_PATH+MODEL+'/', 
-                           index)
+    parameters[index] = {}
+    parameters[index]['logger'] = create_logger_client(LOG_PATH+MODEL+'/', 
+                                                       index)
 
 
-    logger.debug(f"Execution path: {os.getcwd()}.")
-    logger.debug(f"Training with model architecture {MODEL} and dataset {DATASET}.")
+    parameters[index]['logger'].debug(f"Execution path: {os.getcwd()}.")
+    parameters[index]['logger'].debug(f"Training with model architecture {MODEL} and dataset {DATASET}.")
 
-    logger.debug("Loading dataset")
-    x_train, x_test, y_train, y_test = load_data(dataset_name=DATASET, 
-                                             clientID=index, 
-                                             numClients=num_clients, 
-                                             alpha=alpha,
-                                             trPer=ts,
-                                             distribution="dirichlet") 
+    parameters[index]['logger'].debug("Loading dataset")
+    parameters[index]['x_train'], x_test, parameters[index]['y_train'], y_test = load_data_client(dataset_name=DATASET, 
+                                                        clientID=index, 
+                                                        numClients=num_clients, 
+                                                        alpha=alpha,
+                                                        trPer=ts,
+                                                        distribution="dirichlet") 
 
-    train_dataset = CustomDataset(x_train, 
-                              y_train)
+
+    if DATASET == "SIGN":
+
+        parameters[index]['x_train'] = np.transpose(x_train, (0, 3, 2, 1))
+        parameters[index]['x_test'] = np.transpose(x_test, (0, 3, 2, 1))
+
+    parameters[index]['train_d'] = CustomDataset(parameters[index]['x_train'], 
+                                                 parameters[index]['y_train'])
 
     test_dataset = CustomDataset(x_test, 
-                             y_test)
+                                 y_test)
 
-    spe = len(x_train)//bs
-    features_shape = x_train.shape[1:]
+    parameters[index]['trainloader'] = torch.utils.data.DataLoader(parameters[index]['train_d'], 
+                                              batch_size=bs, 
+                                              shuffle=False,
+                                              num_workers=0,
+                                              pin_memory=True)
 
-    del x_train, y_train, x_test, y_test
-    gc.collect()
+    testloader = torch.utils.data.DataLoader(test_dataset, 
+                                             batch_size=bs, 
+                                             shuffle=False,
+                                             num_workers=0,
+                                             pin_memory=True)
 
+    # load through put dataframe
+    df = pd.read_csv(f"data/processed/speed2/{exec_id}.csv") 
+    parameters[index]['tdf'] = df[df['Node ID'] == index]
 
-    trainloader = DataLoader(train_dataset, 
-                            batch_size=bs, 
-                            shuffle=False,
-                            num_workers=0,
-                            pin_memory=False)
+    parameters[index]['logger'].debug("Building model")
 
-    testloader = DataLoader(test_dataset, 
-                            batch_size=bs, 
-                            shuffle=False,
-                            num_workers=0,
-                            pin_memory=False)
+    labels = cfg['datasets'][DATASET]['classes']
+    parameters[index]['model'], parameters[index]['criterion'], parameters[index]['optimizer'], parameters[index]['device'], parameters[index]['scheduler'] = build_model(features_shape=None,
+                                                                 labels_shape=labels,
+                                                                 model_name=MODEL,
+                                                                 lr=0.1)
 
-    logger.debug("Building model")
-
-    if DATASET in ['CIFAR-10',
-                'MNIST',
-                'FMNIST']:
-
-        labels = 10
-        
-    if DATASET == 'CIFAR-100':
-
-        labels = 100
-
-    else:
-
-        pass
-    
-    # need to create differnt models per client
-    model, criterion, optimizer, device = build_model(features_shape=features_shape,
-                                                    labels_shape=labels,
-                                                    model_name=MODEL,
-                                                    lr=1e-3)
-
-
-    logger.debug("Starting training")
+    parameters[index]['logger'].debug("Starting training")
     print(f'starting client {index}')
-    logger.debug(f'cid {index} with mid {system_models_ids[MODEL]} model {MODEL}')
     threads.append(threading.Thread(target=fl.client.start_client,
-                                      kwargs={'server_address':f'{SERVER_IP}:{SERVER_PORT}', 
+                                    kwargs={'server_address':f'{SERVER_IP}:{SERVER_PORT}', 
                                             'client':FLClient(cid=index,
-                                            mid=system_models_ids[MODEL],
-                                            model=model,
-                                            i_epochs=i_epochs,
-                                            model_name=MODEL,
-                                            batch_size=bs,
-                                            dataset=DATASET,
-                                            strategy=strategy,
-                                            model_path=MODEL_PATH,
-                                            result_path=RESULT_PATH,
-                                            computation_time_path=COMP_PATH,
-                                            logger=logger,
-                                            optimizer=optimizer,
-                                            criterion=criterion,
-                                            trainloader=trainloader,
-                                            testloader=testloader,
-                                            device=device).to_client(),
-                                            'grpc_max_message_length':message_length}))
+                                                              mid=0,
+                                                              model=parameters[index]['model'],
+                                                              i_epochs=i_epochs,
+                                                              model_name=MODEL,
+                                                              batch_size=bs,
+                                                              dataset=DATASET,
+                                                              strategy=strategy,
+                                                              model_path=MODEL_PATH,
+                                                              result_path=RESULT_PATH,
+                                                              computation_time_path=COMP_PATH,
+                                                              logger=parameters[index]['logger'],
+                                                              optimizer=parameters[index]['optimizer'],
+                                                              criterion=parameters[index]['criterion'],
+                                                              scheduler=parameters[index]['scheduler'],
+                                                              trainloader=parameters[index]['trainloader'],
+                                                              testloader=testloader,
+                                                              throughput=parameters[index]['tdf'],
+                                                              max_timeout=max_timeout,
+                                                              estimation_per_batch=estimation_per_batch,
+                                                              original_training=original_training,
+                                                              real_timer=False,
+                                                              device=parameters[index]['device']).to_client(),
+                                                              'grpc_max_message_length':message_length}))
 
 
 for thread in threads:

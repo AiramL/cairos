@@ -1,4 +1,4 @@
-environment: "cairos_sbrc2026"
+environment: "cairos_vtc"
 
 datasets:
         CIFAR-10: 
@@ -14,7 +14,8 @@ datasets:
                 classes: 43
                 features: 32,32,3
 simulation:
-        cars: 5
+        cars: 40
+        map: "Manhattan"
         mobility:
                 distance:
                         x: 1000
@@ -35,13 +36,13 @@ simulation:
                         ip: "127.0.0.1"
                         port: "8081"
                         timeout: 50
-                        rounds: 3
-                        n_clients_fit: 5
-                        strategy: "cairos_pe"
+                        rounds: 15
+                        n_clients_fit: 10
+                        strategy: "fedavg"
                         epochs_distribution: "equal"
                 client:
                         model: "RESNET10"
-                        epochs: 5
+                        epochs: 10
                         dataset: "CIFAR-10"
         base_station:
                 range: 10000

@@ -14,7 +14,7 @@ distribution_type=$(yq '.simulation.federated_learning.server.epochs_distributio
 mapfile -t speed_ids < <(yq '.simulation.speed.index[]' config/config.yaml)
 
 
-for speed_id in speed_ids;
+for speed_id in $speed_ids;
 do
 
 for index in 0 1 2;

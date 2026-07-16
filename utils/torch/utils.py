@@ -352,7 +352,7 @@ def limit_memory(logger):
         
         props = torch.cuda.get_device_properties(device=None)
         total_memory = props.total_memory
-        client_memory = 1024 * 1024 * 1024 # 1024 MB for each client
+        client_memory = 1024 * 1024 * 512 # 1024 MB for each client
         memory_percentage = client_memory/total_memory
         torch.cuda.set_per_process_memory_fraction(memory_percentage, 
                                                    device=None)
