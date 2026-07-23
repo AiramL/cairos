@@ -12,8 +12,7 @@ from architectures.torch.implementation import (
         train, 
         evaluate)
 
-from utils.estimator.architecture import EstimatorLSTM
-from utils.torch.custom_dataset import CustomDataset
+from utils.estimator.delay.architecture import EstimatorLSTM
 
 # Federated Learning Client
 class FLClient(fl.client.NumPyClient):
@@ -102,8 +101,6 @@ class FLClient(fl.client.NumPyClient):
         self.estimation_per_batch = estimation_per_batch
         self.past_delays = deque(self.window_size*[0],                    # starting the past delays with a fixed value
                                  maxlen=self.window_size)                 # limiting window size
-        self.estimated_past_delays = deque(self.window_size*[0],          # starting the estimated past delays with a fixed value
-                                           maxlen=self.window_size)       # limiting window size
         self.model_size = sum(p.numel() * p.element_size()
                               for p in list(model.parameters()) + list(model.buffers())) / 1024
 
@@ -199,34 +196,6 @@ class FLClient(fl.client.NumPyClient):
 
         return data - maximum_chunk_size, time_last_chunk
 
-    def send_estimated_data_chunk(self, 
-                                  data): 
-
-        time_last_chunk = 0.0
-
-        window = torch.tensor(list(self.estimated_past_delays),
-                              dtype=torch.float32).view(-1,1)
-        
-        estimated_delay = abs(self.estimator.predict(window))
-        self.logger.debug(f'estimated delay: {estimated_delay}')
-    
-        self.logger.debug('updating estimated past delays')
-        self.estimated_past_delays.appendleft(estimated_delay)
-
-        maximum_chunk_size = floor(self.message_period * 
-                                   1000 * 
-                                   estimated_delay)
-
-        self.logger.debug(f'verifying if there is remaning data, max chunck: {maximum_chunk_size}, data: {data}')
-        if (maximum_chunk_size >= data):
-
-            time_last_chunk = data/(1000 * 
-                                    estimated_delay)
-            
-            return 0, time_last_chunk
-
-        return data - maximum_chunk_size, time_last_chunk
-
     # simulate real communication delay
     def get_real_delay(self,
                        time):
@@ -249,26 +218,19 @@ class FLClient(fl.client.NumPyClient):
         return float(0.1 * (communication_time + time_last_chunk))
 
     
-    # estimate the delay 
+    # return the delay estimated by the LSTM model, given the current time
     def get_estimated_delay(self,
                             time):
 
-        communication_time = 0
-        remaining_data = self.model_size
         state = self.time_to_state(time)
         self.update_past_delays(state)
-        self.estimated_past_delays = self.past_delays.copy()
 
-        while (remaining_data):
-            
-            self.logger.debug(f"remaining data: {remaining_data}")
-            remaining_data, time_last_chunk = self.send_estimated_data_chunk(remaining_data)
-            
-            if remaining_data:
+        window = torch.tensor(list(self.past_delays),
+                                      dtype=torch.float32).view(-1,1)
                 
-                communication_time += 1
+        estimated_delay = self.estimator.predict(window)
 
-        return float(0.1 * (communication_time + time_last_chunk))
+        return estimated_delay
     
     def update_global_epoch(self):
 

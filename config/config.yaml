@@ -16,6 +16,7 @@ datasets:
 simulation:
         cars: 40
         map: "Manhattan"
+        data_type: "delay"
         mobility:
                 distance:
                         x: 1000
