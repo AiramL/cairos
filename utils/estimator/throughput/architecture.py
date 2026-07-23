@@ -1,6 +1,6 @@
 from abc import ABC
 from abc import abstractmethod
-from .train import LSTM
+from .lstm import LSTM
 import torch
 
 class Estimator(ABC):
@@ -37,12 +37,3 @@ class EstimatorLSTM(Estimator):
         
         return float(self.model(data)[-1])
 
-class EstimatorARIMA(Estimator):
-    
-    def __init__(self):
-        #super().__init__(ARIMA)
-        pass
-
-    def predict(self):
-        prediction = self.model.predict()
-        return prediction

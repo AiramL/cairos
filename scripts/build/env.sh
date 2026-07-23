@@ -1,4 +1,5 @@
 ENV_NAME=$(yq '.environment' "config/config.yaml")
+ENV_NAME=$(echo "$ENV_NAME" | tr -d '"')
 
 if [ "$CONDA_DEFAULT_ENV" != "$ENV_NAME" ]; then
 

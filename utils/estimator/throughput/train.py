@@ -1,6 +1,5 @@
 # implement the training for lstm model to predict thorughputs
 import matplotlib.pyplot as plt
-import pandas as pd
 import torch
 import torch.nn as nn
 import numpy as np
@@ -8,11 +7,13 @@ import torch.optim as optim
 import torch.utils.data as data
 
 from utils.utils import load_config
-from utils.estimator.lstm import LSTM
-from utils.estimator.data import (
-        load_tp,
-        create_dataset)
 
+from .data import (
+    create_dataset,
+    load_tp
+)
+
+from .lstm import LSTM
 
 def train(speed=0, 
           PLOT=False):

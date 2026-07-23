@@ -1,6 +1,11 @@
 import torch
 from collections import deque
-from .train import LSTM, load_tp, create_dataset
+from .lstm import LSTM
+from .data import (
+    load_tp, 
+    create_dataset
+)
+
 
 model = LSTM()
 

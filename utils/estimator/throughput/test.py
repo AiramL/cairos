@@ -2,7 +2,6 @@ import torch
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 
 from utils.utils import load_config
 from .data import (
@@ -44,7 +43,7 @@ def test(speed=0):
     plt.xlabel("Sample (#)")
     plt.ylabel("Throughput (Mb/s)")
     plt.legend()
-    plt.show()
+    plt.savefig(f"figures/test_throughput_speed_{speed}.png")
 
 if __name__ == "__main__":
    

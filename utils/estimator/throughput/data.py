@@ -18,7 +18,7 @@ def create_dataset(dataset, lookback):
 
 
 def load_tp(client_id=1, 
-            data_path="data/processed/speed", 
+            data_path="data/processed/10000/speed", 
             speed=0, 
             data_file="0.csv"):
     
