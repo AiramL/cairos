@@ -3,8 +3,6 @@ import pandas as pd
 # define device
 from utils.torch.gpu import define_device
 
-device = define_device()
-
 from utils.torch.utils import (
         get_args_client,
         limit_memory)
@@ -41,6 +39,8 @@ original_training = args.original_training          # False
 max_timeout =  args.max_timeout                     # False
 estimation_per_batch = args.estimation_per_batch    # False
 base_station_range = args.base_station_range        # 10000
+
+device = define_device(client_id=client_id)
 
 import torch
 import flwr as fl
