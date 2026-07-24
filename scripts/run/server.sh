@@ -24,5 +24,5 @@ mkdir -p $server_log_path
 mkdir -p $server_model_path 
 mkdir -p $time_path_server
 
-# starting server32607MiB
+# starting server
 python -m src.federated_learning.server.$framework.app -to=$timeout -ds=$dataset -ncf=$numClientsFit -nc=$numClients -nor=$eps -sn=$server -smp=$server_model_path -md=$model -slp=$server_log_path -sp=$server_port -tp=$time_path_server -a=$alpha & 

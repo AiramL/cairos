@@ -1,10 +1,17 @@
 import pandas as pd
+
+# define device
+from utils.torch.gpu import define_device
+
+device = define_device()
+
 from utils.torch.utils import (
         get_args_client,
         limit_memory)
 
 # Get parameters
 args = get_args_client()
+
 
 # Set Parameters
                                                     # default parameters
