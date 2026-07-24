@@ -21,9 +21,9 @@ simulation:
                 distance:
                         x: 1000
                         y: 1000       
-                repetitions: 3
-        communication:
                 repetitions: 10
+        communication:
+                repetitions: 30
         speed:
                 index: 
                         - 0
@@ -37,7 +37,7 @@ simulation:
                         ip: "127.0.0.1"
                         port: "8081"
                         timeout: 50
-                        rounds: 15
+                        rounds: 50
                         n_clients_fit: 10
                         strategy: "fedavg"
                         epochs_distribution: "equal"

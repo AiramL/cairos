@@ -10,19 +10,18 @@ class LSTM(nn.Module):
                             num_layers=1, 
                             batch_first=True)
 
-        # Output exactly 1 value (the transmission delay)
         self.linear = nn.Linear(50, 1)
 
     def forward(self, x):
-        # x input shape: (batch_size, seq_len, input_size)
+        # FIX: If input is unbatched (e.g., shape [5, 1]), add a batch dimension to make it [1, 5, 1]
+        if x.dim() == 2:
+            x = x.unsqueeze(0)
+            
         lstm_out, _ = self.lstm(x)
         
-        # SLICE HERE: Grab the hidden state of the very last timestep
-        # lstm_out shape becomes: (batch_size, 50)
+        # Now lstm_out is guaranteed to be 3D: (batch_size, sequence_length, hidden_size)
         last_step_out = lstm_out[:, -1, :]
         
-        # Pass only the last timestep through the linear layer
-        # Output shape: (batch_size, 1)
         predictions = self.linear(last_step_out)
         
         return predictions

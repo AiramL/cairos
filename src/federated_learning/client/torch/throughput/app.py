@@ -115,7 +115,7 @@ fl.client.start_client(server_address=f'{SERVER_IP}:{SERVER_PORT}',
                                        original_training=original_training,
                                        real_timer=False,
                                        device=device,
-                                       computational_capacity=1000,
-                                       model_flops=1000).to_client(),
+                                       computational_capacity=25,
+                                       model_flops=8).to_client(),
                                        grpc_max_message_length=message_length)
 

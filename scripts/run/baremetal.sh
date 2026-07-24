@@ -41,7 +41,7 @@ else
 fi
 
 bs=128
-fixed_n_clients=40
+fixed_n_clients=$numClients
 
 server_log_path="logs/server/flwr/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$execution/$model/"
 server_model_path="models/server/flwr/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$execution/$model/"
@@ -101,10 +101,10 @@ elif [ $server == "cairos_pe" ]; then
 	sleep 3
 	python -m src.federated_learning.server.$framework.app -to=$timeout -ds=$dataset -ncf=$numClientsFit -nc=$numClients -nor=$eps -sn=$server -smp=$server_model_path -md=$model -slp=$server_log_path -sp=$server_port -tp=$time_path_server -a=$alpha & 
 		
-	clients_result_path="results/clients/flwr/classification/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$execution/$model/"
-	clients_log_path="logs/clients/flwr/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$execution/$model/"
-	clients_model_path="models/clients/flwr/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$execution/$model/"
-	time_path_client="results/clients/flwr/training/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$execution/$model/"
+	clients_result_path="results/clients/flwr/classification/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$data_type/$execution/$model/"
+	clients_log_path="logs/clients/flwr/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$data_type/$execution/$model/"
+	clients_model_path="models/clients/flwr/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$data_type/$execution/$model/"
+	time_path_client="results/clients/flwr/training/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$data_type/$execution/$model/"
 
 	mkdir -p $clients_result_path
 	mkdir -p $clients_result_path/raw
@@ -112,10 +112,10 @@ elif [ $server == "cairos_pe" ]; then
 	mkdir -p $clients_model_path 
 	mkdir -p $time_path_client
 	
-	clients_result_path="results/clients/flwr/classification/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$execution/"
-	clients_log_path="logs/clients/flwr/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$execution/"
-	clients_model_path="models/clients/flwr/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$execution/"
-	time_path_client="results/clients/flwr/training/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$execution/"
+	clients_result_path="results/clients/flwr/classification/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$data_type/$execution/"
+	clients_log_path="logs/clients/flwr/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$data_type/$execution/"
+	clients_model_path="models/clients/flwr/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$data_type/$execution/"
+	time_path_client="results/clients/flwr/training/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$data_type/$execution/"
 		
 	echo "Starting clients fedavg"
 	sleep 10
@@ -135,10 +135,10 @@ elif [ $server == "cairos_pb" ]; then
 	sleep 3
 	python -m src.federated_learning.server.$framework.app -to=$timeout -ds=$dataset -ncf=$numClientsFit -nc=$numClients -nor=$eps -sn=$server -smp=$server_model_path -md=$model -slp=$server_log_path -sp=$server_port -tp=$time_path_server -a=$alpha & 
 		
-	clients_result_path="results/clients/flwr/classification/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$execution/$model/"
-	clients_log_path="logs/clients/flwr/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$execution/$model/"
-	clients_model_path="models/clients/flwr/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$execution/$model/"
-	time_path_client="results/clients/flwr/training/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$execution/$model/"
+	clients_result_path="results/clients/flwr/classification/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$data_type/$execution/$model/"
+	clients_log_path="logs/clients/flwr/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$data_type/$execution/$model/"
+	clients_model_path="models/clients/flwr/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$data_type/$execution/$model/"
+	time_path_client="results/clients/flwr/training/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$data_type/$execution/$model/"
 
 	mkdir -p $clients_result_path
 	mkdir -p $clients_result_path/raw
@@ -146,10 +146,10 @@ elif [ $server == "cairos_pb" ]; then
 	mkdir -p $clients_model_path 
 	mkdir -p $time_path_client
 	
-	clients_result_path="results/clients/flwr/classification/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$execution/"
-	clients_log_path="logs/clients/flwr/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$execution/"
-	clients_model_path="models/clients/flwr/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$execution/"
-	time_path_client="results/clients/flwr/training/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$execution/"
+	clients_result_path="results/clients/flwr/classification/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$data_type/$execution/"
+	clients_log_path="logs/clients/flwr/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$data_type/$execution/"
+	clients_model_path="models/clients/flwr/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$data_type/$execution/"
+	time_path_client="results/clients/flwr/training/$server/$dataset/$alpha/$framework/$timeout/$i_epochs/$numClientsFit/$scenario/$data_type/$execution/"
 		
 	echo "Starting clients fedavg"
 	sleep 10

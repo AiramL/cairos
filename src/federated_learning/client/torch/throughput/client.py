@@ -1,4 +1,5 @@
 import torch
+import time
 
 import flwr as fl
 from collections import OrderedDict
@@ -43,7 +44,7 @@ class FLClient(fl.client.NumPyClient):
                  real_timer=False,
                  deterministic_computational_delay=False,
                  computational_capacity=1000,
-                 model_flops=1000,
+                 model_flops=200,
                  **kwargs):
         
         # paths
@@ -95,6 +96,7 @@ class FLClient(fl.client.NumPyClient):
         self.window_size = 5
         self.error_tolerance = 1.2
         self.message_period = 0.1
+        self.estimation_frequency = 10 
         self.state = 0
         self.timeout = 0
         self.max_timeout = max_timeout
@@ -213,6 +215,7 @@ class FLClient(fl.client.NumPyClient):
         self.estimated_past_delays.appendleft(estimated_delay)
 
         maximum_chunk_size = floor(self.message_period * 
+                                   self.estimation_frequency * 
                                    1000 * 
                                    estimated_delay)
 
@@ -220,6 +223,7 @@ class FLClient(fl.client.NumPyClient):
         if (maximum_chunk_size >= data):
 
             time_last_chunk = data/(1000 * 
+                                    self.estimation_frequency *
                                     estimated_delay)
             
             return 0, time_last_chunk
@@ -245,7 +249,7 @@ class FLClient(fl.client.NumPyClient):
                 state += 1
                 communication_time += 1
 
-        return float(0.1 * (communication_time + time_last_chunk))
+        return float(self.message_period * (communication_time + time_last_chunk))
 
     
     # estimate the delay 
@@ -267,7 +271,7 @@ class FLClient(fl.client.NumPyClient):
                 
                 communication_time += 1
 
-        return float(0.1 * (communication_time + time_last_chunk))
+        return float(self.message_period * self.estimation_frequency * (communication_time + time_last_chunk))
     
     def update_global_epoch(self):
 
@@ -348,7 +352,9 @@ class FLClient(fl.client.NumPyClient):
                     
                     estimated_delay = self.get_batch_estimated_computational_delay()
                     current_time += estimated_delay
+                    estimation_initial_time = time.time()
                     delay = self.get_estimated_delay(current_time)
+                    self.logger.debug(f'estimation time: {time.time() - estimation_initial_time}')
                     self.logger.debug(f'estimated delay per batch: {delay}')
                     self.logger.debug(f'total estimated delay: {(delay + current_time) * self.error_tolerance }, timeout: {self.timeout}')
                     

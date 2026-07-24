@@ -47,5 +47,15 @@ else
     cid=$1
 fi
 
-python -m src.federated_learning.client.$framework.$data_type.app -epb=0 -ot=0 -eid=0 -spid=$speed_id -mt=$timeout -nle=$i_epochs -ds=$dataset -md=$model -nc=$numClients -cid=$cid -b=$bs -ncf=$numClientsFit -mp=$clients_model_path -lp=$clients_log_path -rp=$clients_result_path -ctp=$time_path_client -sp=$server_port -a=$alpha -bsr=$base_station_range >> $clients_result_path$model"/raw/client_$i" &
+for i in $(seq 1 $(($numClients-1)));
+do
+    
+        echo "Waiting client "$i" initialization"
+        python -m src.federated_learning.client.$framework.$data_type.app -epb=0 -ot=0 -eid=0 -spid=$speed_id -mt=$timeout -nle=$i_epochs -ds=$dataset -md=$model -nc=$numClients -cid=$i -b=$bs -ncf=$numClientsFit -mp=$clients_model_path -lp=$clients_log_path -rp=$clients_result_path -ctp=$time_path_client -sp=$server_port -a=$alpha -bsr=$base_station_range >> $clients_result_path$model"/raw/client_$i" &
+        
+        sleep 1
+
+done
+
+
 		
