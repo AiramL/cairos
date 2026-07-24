@@ -16,7 +16,7 @@ datasets:
 simulation:
         cars: 40
         map: "Manhattan"
-        data_type: "delay"
+        data_type: "throughput"
         mobility:
                 distance:
                         x: 1000

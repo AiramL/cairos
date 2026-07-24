@@ -53,10 +53,10 @@ def plot_efficiency_bar_with_error(file_path="results/server/flwr/training",
                 
                 rep_efficiencies = []
 
-                for rep in range(1, n_rep+1):
+                for rep in range(n_rep+1):
             
                     try:
-                        path = f'{file_path}/{strategy}/{dataset}/{alpha}/{framework}/experiment_{rep}/{timeout}/{i_epochs}/{n_select}/{scenario}/{model}/aggregation.csv'
+                        path = f'{file_path}/{strategy}/{dataset}/{alpha}/{framework}/{timeout}/{i_epochs}/{n_select}/{scenario}/{rep}/{model}/aggregation.csv'
                         
                         data = pd.read_csv(path,header=None)
 

@@ -30,11 +30,10 @@ local_epochs=$(echo "$local_epochs" | tr -d '"')
 distribution_type=$(yq '.simulation.federated_learning.server.epochs_distribution' config/config.yaml )
 distribution_type=$(echo "$distribution_type" | tr -d '"')
 
-data_type=$(yq '.simulation.data_type' config/config.yaml )
-data_type=$(echo "$data_type" | tr -d '"')
-
 mapfile -t speed_ids < <(yq '.simulation.speed.index[]' config/config.yaml)
 
+for data_type in "delay" "throughput";
+do
 
 for speed_id in $speed_ids;
 do
@@ -54,6 +53,7 @@ for strategie in "cairos_pe" "cairos_pb" "fedavg";
 do
 source scripts/run/baremetal.sh "$strategie" "$alpha_dirichlet" "$model" "$port" "$framework" "$n_clients" "$dataset" "$rounds" "$local_epochs" "$fit" "$distribution_type" "$timeout" "$speed_id" "$index" "$base_station_range" "$data_type"
 
+done
 done
 done
 done

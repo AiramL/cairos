@@ -54,11 +54,11 @@ def accuracy_bar_plot_grouped_with_std(file_path="results/clients/flwr/classific
                 
                 client_accuracies = [] 
 
-                for rep in range(1,n_rep+1):
+                for rep in range(n_rep+1):
 
                     try:
                         
-                        path = f'{file_path}/{strategy}/{dataset}/{alpha}/{framework}/experiment_{rep}/{timeout}/{i_epochs}/{n_select}/equal/{model}/{cid}'
+                        path = f'{file_path}/{strategy}/{dataset}/{alpha}/{framework}/{timeout}/{i_epochs}/{n_select}/equal/{rep}/{model}/0'
                         
                         if os.path.exists(path):
 
@@ -71,6 +71,7 @@ def accuracy_bar_plot_grouped_with_std(file_path="results/clients/flwr/classific
                             pass
 
                     except (FileNotFoundError, IndexError, pd.errors.EmptyDataError):
+                        
                         continue
 
                 if client_accuracies:

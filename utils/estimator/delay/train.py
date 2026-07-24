@@ -124,4 +124,4 @@ if __name__ == "__main__":
                            data_path=f"data/processed/{base_station_range}/speed")
         
         # Pass tpd and the payload size into the train function
-        train(tpd=tpd, speed=speed, payload_size=MODEL_PAYLOAD_SIZE, PLOT=True)
+        train(tpd=tpd, speed=speed, payload_size=MODEL_PAYLOAD_SIZE, PLOT=False)
