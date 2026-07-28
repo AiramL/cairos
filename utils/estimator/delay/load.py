@@ -8,7 +8,7 @@ from .data import (
 
 # 1. Define constants to match your training script
 SPEED = 0
-PAYLOAD_SIZE = 0.5
+PAYLOAD_SIZE = 19176
 LOOKBACK = 5  # Ensure this matches what you trained with!
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
