@@ -222,9 +222,10 @@ class FLClient(fl.client.NumPyClient):
         self.logger.debug(f'verifying if there is remaning data, max chunck: {maximum_chunk_size}, data: {data}')
         if (maximum_chunk_size >= data):
 
-            time_last_chunk = self.estimation_frequency * data/(1000 * 
-                                                                self.message_period *
-                                                                estimated_delay)
+            time_last_chunk = data/(1000 * 
+                                    self.estimation_frequency *
+                                    self.message_period *
+                                    estimated_delay)
             
             return 0, time_last_chunk
 
