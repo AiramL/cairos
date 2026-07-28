@@ -288,12 +288,11 @@ class FLClient(fl.client.NumPyClient):
 
         return result
     
-    def save_epoch_time(self,
-                        epoch):
+    def save_epoch_time(self):
 
         with open(f"{self.time_path}training_time_{self.cid}.csv", "a") as writer:
             
-            line = f'{epoch},{self.training_time},{self.estimated_delay},{self.lstm_estimation_time}\n'
+            line = f'{self.global_epoch},{self.training_time},{self.estimated_delay},{self.lstm_estimation_time}\n'
 
             writer.writelines(line)
         
@@ -471,11 +470,12 @@ class FLClient(fl.client.NumPyClient):
             
             # Calculating the total local training time
             self.logger.debug(f'saving computational time')
-            self.save_epoch_time(self.global_epoch)
+            self.save_epoch_time()
 
         else:
 
             self.training_time = current_time + communication_time
+            self.save_epoch_time()
         
         self.logger.debug(f'sending parameters to server: model_weights, \
                             len(train): {self.train_size} \
