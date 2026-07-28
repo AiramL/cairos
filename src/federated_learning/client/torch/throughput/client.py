@@ -214,18 +214,17 @@ class FLClient(fl.client.NumPyClient):
         self.logger.debug('updating estimated past delays')
         self.estimated_past_delays.appendleft(estimated_delay)
 
-        maximum_chunk_size = floor(self.message_period * 
-                                   self.estimation_frequency * 
+        maximum_chunk_size = floor(self.estimation_frequency * 
                                    1000 * 
-                                   estimated_delay)
+                                   estimated_delay *
+                                   self.message_period)
 
         self.logger.debug(f'verifying if there is remaning data, max chunck: {maximum_chunk_size}, data: {data}')
         if (maximum_chunk_size >= data):
 
-            time_last_chunk = data/(1000 * 
-                                    self.message_period *
-                                    self.estimation_frequency *
-                                    estimated_delay)
+            time_last_chunk = self.estimation_frequency * data/(1000 * 
+                                                                self.message_period *
+                                                                estimated_delay)
             
             return 0, time_last_chunk
 
