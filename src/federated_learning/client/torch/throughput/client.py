@@ -58,6 +58,7 @@ class FLClient(fl.client.NumPyClient):
         self.logger = logger
         self.global_epoch = 0
         self.real_timer = real_timer
+        self.lstm_estimation_time = 0
         self.computational_capacity_variance = 0.5
 
         # identifiers
@@ -81,6 +82,7 @@ class FLClient(fl.client.NumPyClient):
         # learning parameters
         self.i_epochs = i_epochs
         self.bs = batch_size
+        self.estimated_delay = 0
 
         # mobility parameters
         self.throughput = throughput
@@ -291,7 +293,7 @@ class FLClient(fl.client.NumPyClient):
 
         with open(f"{self.time_path}training_time_{self.cid}.csv", "a") as writer:
             
-            line = f'{epoch},{self.training_time}\n'
+            line = f'{epoch},{self.training_time},{self.estimated_delay},{self.lstm_estimation_time}\n'
 
             writer.writelines(line)
         
@@ -356,7 +358,9 @@ class FLClient(fl.client.NumPyClient):
                     current_time += estimated_delay
                     estimation_initial_time = time.time()
                     delay = self.get_estimated_delay(current_time)
-                    self.logger.debug(f'estimation time: {time.time() - estimation_initial_time}')
+                    self.estimated_delay = (delay + current_time) * self.error_tolerance
+                    self.lstm_estimation_time = time.time() - estimation_initial_time
+                    self.logger.debug(f'estimation time: {self.lstm_estimation_time}')
                     self.logger.debug(f'estimated delay per batch: {delay}')
                     self.logger.debug(f'total estimated delay: {(delay + current_time) * self.error_tolerance }, timeout: {self.timeout}')
                     
@@ -376,7 +380,11 @@ class FLClient(fl.client.NumPyClient):
                 # estimating communication delay for the next epoch
                 estimated_delay = self.get_epoch_estimated_computational_delay()
                 current_time += estimated_delay
+                estimation_initial_time = time.time()
                 delay = self.get_estimated_delay(current_time)
+                self.lstm_estimation_time = time.time() - estimation_initial_time
+                self.estimated_delay = (delay + current_time) * self.error_tolerance
+                self.logger.debug(f'estimation time: {self.lstm_estimation_time}')
                 self.logger.debug(f'estimated delay per epoch: {delay}')
                 self.logger.debug(f'total estimated delay for next epoch: {delay * self.error_tolerance + current_time}, timeout: {self.timeout}')
 
