@@ -223,6 +223,7 @@ class FLClient(fl.client.NumPyClient):
         if (maximum_chunk_size >= data):
 
             time_last_chunk = data/(1000 * 
+                                    self.message_period *
                                     self.estimation_frequency *
                                     estimated_delay)
             
@@ -266,6 +267,7 @@ class FLClient(fl.client.NumPyClient):
             
             self.logger.debug(f"remaining data: {remaining_data}")
             remaining_data, time_last_chunk = self.send_estimated_data_chunk(remaining_data)
+            self.logger.debug(f"remaining data after sending: {remaining_data}, time last chunk: {time_last_chunk}")
             
             if remaining_data:
                 

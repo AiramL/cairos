@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import pandas as pd
 
-def create_dataset(dataset, lookback, payload_size=0.5, slot_duration=0.1):
+def create_dataset(dataset, lookback, payload_size=19176, slot_duration=0.1):
     """Transform a time series into a delay prediction dataset
     
     Args:

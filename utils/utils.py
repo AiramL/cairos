@@ -1,9 +1,6 @@
 import yaml 
 
 import pandas as pd
-import argparse
-
-from os import mkdir
 
 def load_base_stations_positions(positions_file="communication/base_stations.csv"):
 

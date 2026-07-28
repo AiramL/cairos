@@ -16,7 +16,7 @@ from .data import (
 
 
 
-def train(tpd, speed=0, payload_size=0.5, PLOT=False):
+def train(tpd, speed=0, payload_size=19176, PLOT=False):
     # train-test split for time series
     train_size = int(len(tpd) * 0.67)
     train, test = tpd[:train_size], tpd[train_size:]
@@ -117,11 +117,14 @@ if __name__ == "__main__":
     base_station_range = cfg["simulation"]["base_station"]["range"] 
     
     # Define your model size here
-    MODEL_PAYLOAD_SIZE = 0.5 
+    MODEL_PAYLOAD_SIZE = 19176 
 
     for speed in speeds:
         tpu, tpd = load_tp(speed=speed,
                            data_path=f"data/processed/{base_station_range}/speed")
         
         # Pass tpd and the payload size into the train function
-        train(tpd=tpd, speed=speed, payload_size=MODEL_PAYLOAD_SIZE, PLOT=False)
+        train(tpd=tpd, 
+              speed=speed, 
+              payload_size=MODEL_PAYLOAD_SIZE, 
+              PLOT=False)

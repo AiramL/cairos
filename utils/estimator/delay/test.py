@@ -10,7 +10,7 @@ from .data import (
 
 from .architecture import LSTM
 
-def test(tpd, speed=0, payload_size=5.0):
+def test(tpd, speed=0, payload_size=19176):
     
     train_size = int(len(tpd) * 0.67)
     train, test = tpd[:train_size], tpd[train_size:]
