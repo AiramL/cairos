@@ -363,6 +363,10 @@ class FLClient(fl.client.NumPyClient):
                         current_time -= estimated_delay
                         stop = True
                         break
+
+                    else:
+                    
+                        current_time -= estimated_delay
             
             # estimating the communication delay for each local epoch
             if not self.estimation_per_batch:
@@ -379,6 +383,11 @@ class FLClient(fl.client.NumPyClient):
                     current_time -= estimated_delay
 
                     break
+
+                else:
+
+                    current_time -= estimated_delay
+
 
         self.scheduler.step()
         
