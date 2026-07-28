@@ -18,6 +18,7 @@ def plot_efficiency_bar_with_error(file_path="results/server/flwr/training",
                                    scenario='equal',
                                    n_rep=5,  
                                    PLOT=False,
+                                   data_type="delay",
                                    language="pt"):
 
     if language == "en":
@@ -39,6 +40,7 @@ def plot_efficiency_bar_with_error(file_path="results/server/flwr/training",
               "cairos_pe": "k"}
 
     for n_select in n_selected:
+
         plt.figure(figsize=(14, 10))
 
         means_to_plot = {s: [] for s in strategies}
@@ -53,10 +55,11 @@ def plot_efficiency_bar_with_error(file_path="results/server/flwr/training",
                 
                 rep_efficiencies = []
 
-                for rep in range(n_rep+1):
+                for rep in range(n_rep):
             
                     try:
-                        path = f'{file_path}/{strategy}/{dataset}/{alpha}/{framework}/{timeout}/{i_epochs}/{n_select}/{scenario}/{rep}/{model}/aggregation.csv'
+
+                        path = f'{file_path}/{strategy}/{dataset}/{alpha}/{framework}/{timeout}/{i_epochs}/{n_select}/{data_type}/{scenario}/{rep}/{model}/aggregation.csv'
                         
                         data = pd.read_csv(path,header=None)
 
@@ -133,11 +136,16 @@ if __name__ == "__main__":
     rounds = cfg["simulation"]["federated_learning"]["server"]["rounds"]
     n_rep = 3
 
-    plot_efficiency_bar_with_error(dataset=dataset,
-                                   n_selected=[n_selected],
-                                   i_epochs=i_epochs,
-                                   strategies=[strategy],
-                                   execution=[5,10,20,50],
-                                   rounds=rounds,
-                                   n_rep=n_rep)
+    for data_type in ["delay","throughput"]:
+        
+        print("data type: ", data_type)
+
+        plot_efficiency_bar_with_error(dataset=dataset,
+                                       n_selected=[n_selected],
+                                       i_epochs=i_epochs,
+                                       strategies=[strategy],
+                                       execution=[10,20,50,100],
+                                       rounds=rounds,
+                                       data_type=data_type,
+                                       n_rep=n_rep)
 

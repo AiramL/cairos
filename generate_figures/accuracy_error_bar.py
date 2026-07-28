@@ -17,6 +17,7 @@ def accuracy_bar_plot_grouped_with_std(file_path="results/clients/flwr/classific
                                        cid=1,
                                        n_selected=[10],
                                        i_epochs=10,
+                                       data_type="delay",
                                        PLOT=False,
                                        language="pt"):
 
@@ -58,7 +59,7 @@ def accuracy_bar_plot_grouped_with_std(file_path="results/clients/flwr/classific
 
                     try:
                         
-                        path = f'{file_path}/{strategy}/{dataset}/{alpha}/{framework}/{timeout}/{i_epochs}/{n_select}/equal/{rep}/{model}/0'
+                        path = f'{file_path}/{strategy}/{dataset}/{alpha}/{framework}/{timeout}/{i_epochs}/{n_select}/equal/{data_type}/{rep}/{model}/0'
                         
                         if os.path.exists(path):
 
@@ -137,10 +138,13 @@ if __name__ == "__main__":
     rounds = cfg["simulation"]["federated_learning"]["server"]["rounds"]
     timeout = cfg["simulation"]["federated_learning"]["server"]["timeout"]
     n_rep = 3
-
-    accuracy_bar_plot_grouped_with_std(strategies=[strategy],
-                                       dataset=dataset,
-                                       n_selected=[n_selected],
-                                       i_epochs=i_epochs,
-                                       n_rep=n_rep,
-                                       execution=[5,10,20,50])
+    
+    for data_type in ["delay","throughput"]:
+    
+        accuracy_bar_plot_grouped_with_std(strategies=[strategy],
+                                           dataset=dataset,
+                                           n_selected=[n_selected],
+                                           i_epochs=i_epochs,
+                                           n_rep=n_rep,
+                                           data_type=data_type,
+                                           execution=[10,20,50,100])
