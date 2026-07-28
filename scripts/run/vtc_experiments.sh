@@ -43,7 +43,7 @@ speed_ids=$(echo "$speed_ids" | tr -d '"')
 for index in 0 1 2;
 do
 
-for dataset in "CIFAR-10"; 
+for dataset in "CIFAR-10" "SIGN"; 
 do
 
 for timeout in 10 20 50 100;
