@@ -217,7 +217,7 @@ def load_centralized_data_from_fl_dataset(dataset_name:str,      # dataset used 
 
     for clientID in range(numClients):
         
-        data_path = f"datasets/{dataset_name}/distributions/nclients_{numClients}/alpha_{alpha}/cliente_{clientID}.pkl"
+        data_path = f"datasets/{dataset_name}/distributions/nclients_{numClients}/alpha_{alpha}/client_{clientID}.pkl"
 
         with open(data_path ,"rb") as reader:
             

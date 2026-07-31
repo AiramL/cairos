@@ -4,12 +4,16 @@ datasets:
         CIFAR-10: 
                 classes: 10
                 features: 32,32,3
+        CIFAR-100:
+                classes: 100
+                features: 32,32,3
+        
         MNIST: 
                 classes: 10
-                features: 32,32,3
+                features: 28,28,1
         FMNIST:
                 classes: 10
-                features: 32,32,3
+                features: 28,28,1
         SIGN: 
                 classes: 43
                 features: 32,32,3
