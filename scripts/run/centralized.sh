@@ -1,4 +1,4 @@
-for DATASET in "CIFAR-10" "CIFAR-100" "MNIST" "SIGN";
+for DATASET in "CIFAR-10" "MNIST";
 do	
 
 # generate the dataset distribution

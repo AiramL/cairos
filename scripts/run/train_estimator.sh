@@ -1,6 +1,3 @@
-data_type=$(yq '.simulation.data_type' config/config.yaml )
-data_type=$(echo "$data_type" | tr -d '"')
-
 speeds=$(yq '.simulation.speed.index[]' "config/config.yaml")
 
 for speed in $speeds; do 
