@@ -149,19 +149,17 @@ def main(fraction:float=1.0,
         writer.writelines(f"{accuracy:.9f}\n")
 
 if __name__ == "__main__":
-    
-    for fraction in [0.01]:
-
-        for dataset in ["CIFAR-10", "MNIST", "SIGN", "CIFAR-100"]:
    
-            for exec_id in range(1):
-       
-                for MODEL in ["RESNET10", "CNN", "RESNET18", "RESNET34", "MOBILENETV2", "FLISBEE", "SQUEEZENET", "SHUFFLENET"]:
-                
-                    print(f'starting training with model {MODEL} at exec {exec_id} with fraction equal to {fraction}')
-                    main(MODEL=MODEL,
-                         fraction=fraction,
-                         exec_id=exec_id,
-                         DATASET=dataset,
-                         limited_data=False)
-    
+    args = get_args()
+    dataset = args.dataset
+
+    for exec_id in range(1):
+
+        for MODEL in ["RESNET10", "CNN", "RESNET18", "RESNET34", "MOBILENETV2", "FLISBEE", "SQUEEZENET", "SHUFFLENET"]:
+        
+            print(f'starting training with model {MODEL} at exec {exec_id} with dataset {dataset}')
+            main(MODEL=MODEL,
+                 exec_id=exec_id,
+                 DATASET=dataset,
+                 limited_data=True)
+
