@@ -25,7 +25,7 @@ class EstimatorLSTM(Estimator):
                  model_path="models",
                  speed=0):
 
-        model_name = f"{model_path}/model_10_speed_{speed}.pt"
+        model_name = f"{model_path}/model_throughput_speed_{speed}.pt"
         
         model = LSTM()
         model.load_state_dict(torch.load(model_name, weights_only=True))

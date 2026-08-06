@@ -40,7 +40,7 @@ do
 
 speed_ids=$(echo "$speed_ids" | tr -d '"')
 
-for index in 0 1 2;
+for index in 0 1 2 3 4;
 do
 
 for dataset in "CIFAR-10" "SIGN"; 

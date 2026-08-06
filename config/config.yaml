@@ -3,22 +3,37 @@ environment: "cairos_vtc"
 datasets:
         CIFAR-10: 
                 classes: 10
-                features: 32,32,3
+                features: 
+                        height: 32
+                        width: 32
+                        channels: 3
         CIFAR-100:
                 classes: 100
-                features: 32,32,3
+                features:
+                        height: 32
+                        width: 32
+                        channels: 3
         
         MNIST: 
                 classes: 10
-                features: 28,28,1
+                features: 
+                        height: 28
+                        width: 28
+                        channels: 1
         FMNIST:
                 classes: 10
-                features: 28,28,1
+                features: 
+                        height: 28
+                        width: 28
+                        channels: 1
         SIGN: 
                 classes: 43
-                features: 32,32,3
+                features: 
+                        height: 32
+                        width: 32
+                        channels: 3
 simulation:
-        cars: 40
+        cars: 25
         map: "Manhattan"
         data_type: "throughput"
         mobility:

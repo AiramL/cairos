@@ -92,7 +92,8 @@ throughput_df = df[df['Node ID'] == client_id]
 logger.debug("Building model")
 
 labels = cfg['datasets'][DATASET]['classes']
-model, criterion, optimizer, device, scheduler = build_model(features_shape=None,
+features_shape = cfg['datasets'][DATASET]['features']['channels']
+model, criterion, optimizer, device, scheduler = build_model(features_shape=features_shape,
                                                              labels_shape=labels,
                                                              model_name=MODEL,
                                                              lr=0.1)

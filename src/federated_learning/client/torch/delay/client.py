@@ -452,11 +452,11 @@ class FLClient(fl.client.NumPyClient):
         self.set_weights(parameters)
  
         # evaluate model
-        accuracy, loss = evaluate(self.model,
-                                  self.device,
-                                  self.criterion,
-                                  self.testloader,
-                                  self.logger)
+        accuracy, loss, _ = evaluate(self.model,
+                                     self.device,
+                                     self.criterion,
+                                     self.testloader,
+                                     self.logger)
 
 
         ''' Since all clients are selected to evaluate, we guaratee

@@ -96,7 +96,7 @@ def train(speed=0,
         plt.legend()
         plt.show()
     
-    torch.save(model.state_dict(),f"models/model_delay_speed_{speed}.pt")
+    torch.save(model.state_dict(),f"models/model_throughput_speed_{speed}.pt")
 
 
 

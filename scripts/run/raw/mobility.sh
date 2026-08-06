@@ -68,4 +68,3 @@ do
         done
 done
 
-mv routes.rou.xml mobility/
