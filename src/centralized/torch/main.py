@@ -21,7 +21,7 @@ from architectures.torch.implementation import (
 
 from utils.loader import load_config
 
-def main(fraction:float=1.0,
+def main(fraction:float=0.9,
          MODEL:str="RESNET18",
          exec_id:int=0,
          limited_data:bool=False,
@@ -115,7 +115,7 @@ def main(fraction:float=1.0,
 
     logger.debug("Building model")
     labels = cfg['datasets'][DATASET]['classes']
-    features_shape = int(cfg['datasets'][DATASET]['features'][-1])
+    features_shape = int(cfg['datasets'][DATASET]['features']['channels'])
     print(f'features shape {features_shape}, labels shape {labels}')
 
     model, criterion, optimizer, device, scheduler = build_model(features_shape=features_shape,
@@ -126,7 +126,7 @@ def main(fraction:float=1.0,
     logger.debug("Training model") 
     model.to(device)
     running_loss = train_eval(model, 
-                              100, 
+                              1000, 
                               optimizer, 
                               criterion,
                               scheduler,
@@ -155,7 +155,8 @@ if __name__ == "__main__":
 
     for exec_id in range(1):
 
-        for MODEL in ["RESNET10", "CNN", "RESNET18", "RESNET34", "MOBILENETV2", "FLISBEE", "SQUEEZENET", "SHUFFLENET"]:
+        #for MODEL in ["RESNET10", "CNN", "RESNET18", "RESNET34", "MOBILENETV2", "FLISBEE", "SQUEEZENET", "SHUFFLENET"]:
+        for MODEL in ["RESNET10", "CNN", "MOBILENETV2"]:
         
             print(f'starting training with model {MODEL} at exec {exec_id} with dataset {dataset}')
             main(MODEL=MODEL,

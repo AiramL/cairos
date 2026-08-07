@@ -1,4 +1,6 @@
 import threading
+import os 
+
 from utils.utils import load_config
 
 def process_scenario(n_nodes=20, 
@@ -34,8 +36,11 @@ def process_scenario(n_nodes=20,
                                 elements_list[5] + ' ' + \
                                 elements_list[6] + ' ' + \
                                 elements_list[7][:-2] + "\n"
-                    
+
+    os.makedirs(os.path.dirname(processed_file), exist_ok=True)
+                
     with open(processed_file, "w") as writer:
+
         writer.writelines(txt_writer)
 
 if __name__ == "__main__":

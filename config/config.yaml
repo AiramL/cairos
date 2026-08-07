@@ -38,8 +38,8 @@ simulation:
         data_type: "throughput"
         mobility:
                 distance:
-                        x: 1000
-                        y: 1000       
+                        x: 600
+                        y: 600       
                 repetitions: 10
         communication:
                 repetitions: 30

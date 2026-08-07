@@ -17,7 +17,12 @@ def plot_delay_distribution(dataset: str,
     # 1. Construct the full file path to match:
     # root/$DATASET/subpath/$MODEL/filename
 
-    if hardware == "inria":
+    if hardware == "":
+
+        subpath = "5.0/single_data_0/0.9"
+
+    
+    elif hardware != "leme":
 
         subpath = "5.0/single_data_0/1.0"
 
@@ -26,18 +31,29 @@ def plot_delay_distribution(dataset: str,
     
     # Optional: Automatically handle missing extensions if the exact filename isn't found
     if not os.path.exists(file_path):
+
         if os.path.exists(file_path + '.txt'):
+
             file_path += '.txt'
+
         elif os.path.exists(file_path + '.csv'):
+
             file_path += '.csv'
+
         else:
-            raise FileNotFoundError(f"Could not find the file at {file_path}")
+
+            print(f"Could not find the file at {file_path}")
+
+            return
 
     # 2. Read the file and skip the first line
     # np.loadtxt is highly efficient for reading numerical arrays and allows skipping rows easily
     try:
+
         delays = np.loadtxt(file_path, skiprows=1)
+
     except Exception as e:
+
         raise RuntimeError(f"Error reading {file_path}: {e}")
         
     n_samples = len(delays)
@@ -46,7 +62,8 @@ def plot_delay_distribution(dataset: str,
         return
 
     # 3. Calculate the number of bins using the square-root rule
-    n_bins = int(math.ceil(math.sqrt(n_samples)))
+    #n_bins = int(math.ceil(math.sqrt(n_samples)))
+    n_bins = 250
 
     # 4. Set up a clean, professional visualization
     sns.set_theme(style="whitegrid", context="paper")
@@ -92,12 +109,14 @@ def plot_delay_distribution(dataset: str,
 
 if __name__ == '__main__':
 
-    for hardware in ['inria', 'leme']:
+    hardware =''
 
-        for file_name in ["batch_execution_time", "epoch_execution_time", "inference_time"]:
+    #for hardware in ['inria', 'leme', "jetson", "raspberry"]:
 
-            for dataset in ["CIFAR-10", "MNIST", "SIGN", "CIFAR-100"]:
+    for file_name in ["batch_execution_time", "epoch_execution_time", "inference_time"]:
 
-                for model in ["RESNET10", "CNN", "RESNET18", "RESNET34", "MOBILENETV2", "FLISBEE", "SQUEEZENET", "SHUFFLENET"]:
+        for dataset in ["CIFAR-10", "MNIST", "SIGN", "CIFAR-100"]:
 
-                    plot_delay_distribution(dataset, model, hardware, filename=file_name)
+            for model in ["RESNET10", "CNN", "RESNET18", "RESNET34", "MOBILENETV2", "FLISBEE", "SQUEEZENET", "SHUFFLENET"]:
+
+                plot_delay_distribution(dataset, model, hardware, filename=file_name)

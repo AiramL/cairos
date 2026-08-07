@@ -14,6 +14,7 @@ from architectures.torch.implementation import (
         evaluate)
 
 from utils.estimator.delay.architecture import EstimatorLSTM
+from utils.delay.lognormal_generator import generate_delay
 
 # Federated Learning Client
 class FLClient(fl.client.NumPyClient):
@@ -141,9 +142,7 @@ class FLClient(fl.client.NumPyClient):
         
         else:
             
-            return max(0.01, 
-                       np.random.normal(self.model_flops / self.computational_capacity, 
-                                        self.computational_capacity_variance))
+            return generate_delay()
 
 
     # simulate the computation delay for an epoch
@@ -155,25 +154,19 @@ class FLClient(fl.client.NumPyClient):
         
         else:
             
-            return max(0.01, 
-                       np.random.normal(self.model_flops / self.computational_capacity, 
-                                        self.computational_capacity_variance)) * len(self.trainloader)
+            return generate_delay() * len(self.trainloader)
 
 
     # use a gaussian generator to estimate the computation delay for a batch
     def get_batch_estimated_computational_delay(self):
 
-        return max(0.01, 
-                   np.random.normal(self.model_flops / self.computational_capacity, 
-                                    self.computational_capacity_variance))
+        return generate_delay()
 
 
     # use a gaussian generator to estimate the computation delay for an epoch
     def get_epoch_estimated_computational_delay(self):
         
-        return max(0.01, 
-                    np.random.normal(self.model_flops / self.computational_capacity, 
-                                     self.computational_capacity_variance)) * len(self.trainloader)
+        return generate_delay() * len(self.trainloader)
 
 
 
