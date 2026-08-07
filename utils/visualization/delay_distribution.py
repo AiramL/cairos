@@ -17,7 +17,7 @@ def plot_delay_distribution(dataset: str,
     # 1. Construct the full file path to match:
     # root/$DATASET/subpath/$MODEL/filename
 
-    if hardware == "":
+    if hardware == "" or hardware == "inria_1000":
 
         subpath = "5.0/single_data_0/0.9"
 
@@ -63,7 +63,7 @@ def plot_delay_distribution(dataset: str,
 
     # 3. Calculate the number of bins using the square-root rule
     #n_bins = int(math.ceil(math.sqrt(n_samples)))
-    n_bins = 250
+    n_bins = 50
 
     # 4. Set up a clean, professional visualization
     sns.set_theme(style="whitegrid", context="paper")
@@ -109,7 +109,7 @@ def plot_delay_distribution(dataset: str,
 
 if __name__ == '__main__':
 
-    hardware =''
+    hardware ='inria_1000'
 
     #for hardware in ['inria', 'leme', "jetson", "raspberry"]:
 

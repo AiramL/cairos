@@ -69,8 +69,8 @@ def generate_lognormal_data(sample_size, mu, sigma, save_path="figures/generated
 # ==========================================
 if __name__ == "__main__":
 
-    m = 0.00287
-    s = 0.0023
+    m = 0.054826
+    s = 0.014477
 
     # Generate 10,000 data points with underlying mu=0.5 and underlying sigma=0.8
     my_delays = generate_lognormal_data(
