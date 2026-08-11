@@ -33,13 +33,13 @@ datasets:
                         width: 32
                         channels: 3
 simulation:
-        cars: 25
+        cars: 40
         map: "Manhattan"
         data_type: "throughput"
         mobility:
                 distance:
-                        x: 600
-                        y: 600       
+                        x: 1000
+                        y: 1000       
                 repetitions: 10
         communication:
                 repetitions: 30

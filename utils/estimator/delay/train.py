@@ -17,9 +17,12 @@ from .data import (
 
 
 def train(tpd, speed=0, payload_size=19176, PLOT=False):
+    
     # train-test split for time series
     train_size = int(len(tpd) * 0.67)
     train, test = tpd[:train_size], tpd[train_size:]
+    
+    print(f"Length of train: {len(train)}, length of test: {len(test)}")
 
     lookback = 5
     # ADDED: payload_size is required for the new delay dataset
@@ -112,6 +115,7 @@ def train(tpd, speed=0, payload_size=19176, PLOT=False):
 
 
 if __name__ == "__main__":
+   
     cfg = load_config('config/config.yaml') 
     speeds = cfg["simulation"]["speed"]["index"] 
     base_station_range = cfg["simulation"]["base_station"]["range"] 
@@ -120,10 +124,16 @@ if __name__ == "__main__":
     MODEL_PAYLOAD_SIZE = 19176 
 
     for speed in speeds:
+        
+        print(f"Loading data within base station range {base_station_range}")
         tpu, tpd = load_tp(speed=speed,
                            data_path=f"data/processed/{base_station_range}/speed")
-        
+       
+
+        print(f"Length of tpu: {len(tpu)}, length of tpd: {len(tpd)}")
+
         # Pass tpd and the payload size into the train function
+        print("Calling training function")
         train(tpd=tpd, 
               speed=speed, 
               payload_size=MODEL_PAYLOAD_SIZE, 

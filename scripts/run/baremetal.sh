@@ -52,11 +52,15 @@ mkdir -p $server_log_path
 mkdir -p $server_model_path 
 mkdir -p $time_path_server
 
+echo "Declaring the number of epochs"
 epochs_list=$(python -m utils.epochs_distributions $numClients $i_epochs $scenario)
 epochs_array=($epochs_list)
 
+echo "Creating distributions"
 [ ! -d "datasets/$dataset/distributions/nclients_$numClients/alpha_$alpha/"  ] && python -m src.data_division.split_data $numClients $dataset $alpha 
 [ ! -d "datasets/$dataset/distributions/nclients_$fixed_n_clients/alpha_$alpha/"  ] && python -m src.data_division.split_data $fixed_n_clients $dataset $alpha
+
+echo "Training the estimator"
 source scripts/run/train_estimator.sh
 
 wait 

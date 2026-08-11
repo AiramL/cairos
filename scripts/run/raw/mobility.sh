@@ -38,7 +38,7 @@ do
                 PWD_WORK=$SUMO_MOBILITY_PATH/scenarios/$key
 		[ ! -d $PWD_WORK ] &&  mkdir -p $PWD_WORK
                 topology_filename=$PWD_WORK/manhattan_net_$NB_grid.xml
-		Simulation_duration=$(echo "8*($grid_size_x+$grid_size_y)/${speeds[$key]}" | bc -l)	
+		Simulation_duration=$(echo "20*($grid_size_x+$grid_size_y)/${speeds[$key]}" | bc -l)	
 
 		echo "PHASE 1 -> Generating the grid topology"
                 #### To generate a manhattan network topology

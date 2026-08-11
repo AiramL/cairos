@@ -59,7 +59,7 @@ def plot_efficiency_bar_with_error(file_path="results/server/flwr/training",
             
                     try:
 
-                        path = f'{file_path}/{strategy}/{dataset}/{alpha}/{framework}/{timeout}/{i_epochs}/{n_select}/{data_type}/{scenario}/{rep}/{model}/aggregation.csv'
+                        path = f'{file_path}/{strategy}/{dataset}/{alpha}/{framework}/{timeout}/{i_epochs}/{n_select}/{scenario}/{data_type}/{rep}/{model}/aggregation.csv'
                         
                         data = pd.read_csv(path,header=None)
 
@@ -134,7 +134,7 @@ if __name__ == "__main__":
     n_selected = cfg["simulation"]["federated_learning"]["server"]["n_clients_fit"]
     i_epochs = cfg["simulation"]["federated_learning"]["client"]["epochs"]
     rounds = cfg["simulation"]["federated_learning"]["server"]["rounds"]
-    n_rep = 3
+    n_rep = 2
 
     for data_type in ["delay","throughput"]:
         
@@ -144,7 +144,7 @@ if __name__ == "__main__":
                                        n_selected=[n_selected],
                                        i_epochs=i_epochs,
                                        strategies=[strategy],
-                                       execution=[10,20,50,100],
+                                       execution=[5,10,20,30,50,60,100],
                                        rounds=rounds,
                                        data_type=data_type,
                                        n_rep=n_rep)

@@ -46,7 +46,7 @@ do
 for dataset in "CIFAR-10" "SIGN"; 
 do
 
-for timeout in 10 20 50 100;
+for timeout in 5 10 20 50;
 do
 
 for strategie in "cairos_pe" "cairos_pb" "fedavg";

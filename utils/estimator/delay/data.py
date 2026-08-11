@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 
 def create_dataset(dataset, lookback, payload_size=19176, slot_duration=0.1):
+
     """Transform a time series into a delay prediction dataset
     
     Args:
@@ -14,6 +15,7 @@ def create_dataset(dataset, lookback, payload_size=19176, slot_duration=0.1):
     X, y = [], []
     
     for i in range(len(dataset) - lookback):
+
         # 1. Feature is the historical window of throughputs
         feature = dataset[i : i + lookback]
         
@@ -25,28 +27,34 @@ def create_dataset(dataset, lookback, payload_size=19176, slot_duration=0.1):
         delay_t = -1.0 # Sentinel value to check if transmission finishes
         
         for th_array in future_data:
+            
             # Your load_tp returns shape (N, 1), so we extract the scalar throughput
-            th = th_array[0] 
+            th = th_array[0] * 1024 / 8  
             
             if th <= 0:
+
                 time_elapsed += slot_duration
                 continue
                 
             data_in_slot = th * slot_duration
-            
+                
             if data_sent + data_in_slot >= payload_size:
+            
                 # Transmission finishes in this slot
                 remaining_data = payload_size - data_sent
                 fraction_of_slot = remaining_data / th
-                delay_t = time_elapsed + fraction_of_slot
+                delay_t = time_elapsed + fraction_of_slot 
                 break
+
             else:
+                
                 # Keep accumulating
                 data_sent += data_in_slot
                 time_elapsed += slot_duration
                 
         # 3. Only keep the sample if the transmission actually finished before data ran out
         if delay_t != -1.0:
+
             X.append(feature)
             y.append([delay_t]) # Keep as a list so the tensor has shape (Samples, 1)
             
