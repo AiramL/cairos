@@ -147,4 +147,4 @@ if __name__ == "__main__":
                                            i_epochs=i_epochs,
                                            n_rep=n_rep,
                                            data_type=data_type,
-                                           execution=[5,10,20,30,50,60,100])
+                                           execution=[5,10,20,50])

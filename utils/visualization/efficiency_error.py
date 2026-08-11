@@ -144,7 +144,7 @@ if __name__ == "__main__":
                                        n_selected=[n_selected],
                                        i_epochs=i_epochs,
                                        strategies=[strategy],
-                                       execution=[5,10,20,30,50,60,100],
+                                       execution=[5,10,20,50],
                                        rounds=rounds,
                                        data_type=data_type,
                                        n_rep=n_rep)
