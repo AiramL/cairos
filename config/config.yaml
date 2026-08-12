@@ -33,13 +33,13 @@ datasets:
                         width: 32
                         channels: 3
 simulation:
-        cars: 40
+        cars: 50
         map: "Manhattan"
         data_type: "throughput"
         mobility:
                 distance:
-                        x: 1000
-                        y: 1000       
+                        x: 2000
+                        y: 2000       
                 repetitions: 10
         communication:
                 repetitions: 30
@@ -56,7 +56,7 @@ simulation:
                         ip: "127.0.0.1"
                         port: "8081"
                         timeout: 50
-                        rounds: 50
+                        rounds: 15
                         n_clients_fit: 10
                         strategy: "fedavg"
                         epochs_distribution: "equal"

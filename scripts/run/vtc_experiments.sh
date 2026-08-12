@@ -12,9 +12,6 @@ n_clients=$(echo "$n_clients" | tr -d '"')
 rounds=$(yq '.simulation.federated_learning.server.rounds' config/config.yaml )
 rounds=$(echo "$rounds" | tr -d '"')
 
-alpha_dirichlet=$(yq '.simulation.federated_learning.data.alpha' config/config.yaml )
-alpha_dirichlet=$(echo "$alpha_dirichlet" | tr -d '"')
-
 base_station_range=$(yq '.simulation.base_station.range' config/config.yaml ) 
 base_station_range=$(echo "$base_station_range" | tr -d '"')
 
@@ -32,7 +29,13 @@ distribution_type=$(echo "$distribution_type" | tr -d '"')
 
 mapfile -t speed_ids < <(yq '.simulation.speed.index[]' config/config.yaml)
 
-for data_type in "delay" "throughput";
+for dataset in "CIFAR-10" "SIGN"; 
+do
+
+for alpha_dirichlet in 0.5 5.0;
+do
+
+for data_type in "delay";
 do
 
 for speed_id in $speed_ids;
@@ -40,19 +43,18 @@ do
 
 speed_ids=$(echo "$speed_ids" | tr -d '"')
 
-for index in 100 101 102;
-do
-
-for dataset in "CIFAR-10" "SIGN"; 
-do
-
 for timeout in 5 10 20 50;
 do
 
-for strategie in "cairos_pe" "cairos_pb" "fedavg";
+for strategie in "fedavg" "cairos_pe" "cairos_pb";
 do
+
+for index in 0 1 2;
+do
+
 source scripts/run/baremetal.sh "$strategie" "$alpha_dirichlet" "$model" "$port" "$framework" "$n_clients" "$dataset" "$rounds" "$local_epochs" "$fit" "$distribution_type" "$timeout" "$speed_id" "$index" "$base_station_range" "$data_type"
 
+done
 done
 done
 done

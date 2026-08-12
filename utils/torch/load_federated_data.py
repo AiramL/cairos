@@ -99,11 +99,6 @@ def load_data_client(dataset_name='CIFAR-10',   # dataset used on the system
             
             data = load(reader)
 
-        if clientID != 0:
-
-            reduced_data = Subset(data[1], range(100))
-            data[1] = reduced_data
-        
         return data
 
 
@@ -117,7 +112,7 @@ def load_data_server_list(dataset_name:str,      # dataset used on the system
     
     for clientID in range(numClients):
         
-        data_path = f"datasets/{dataset_name}/distributions/nclients_{numClients}/alpha_{alpha}/cliente_{clientID}.pkl"
+        data_path = f"datasets/{dataset_name}/distributions/nclients_{numClients}/alpha_{alpha}/client_{clientID}.pkl"
 
         with open(data_path ,"rb") as reader:
             
@@ -162,7 +157,7 @@ def load_data_server_dataset(dataset_name:str,      # dataset used on the system
 
     for clientID in range(numClients):
         
-        data_path = f"datasets/{dataset_name}/distributions/nclients_{numClients}/alpha_{alpha}/cliente_{clientID}.pkl"
+        data_path = f"datasets/{dataset_name}/distributions/nclients_{numClients}/alpha_{alpha}/client_{clientID}.pkl"
 
         with open(data_path ,"rb") as reader:
             
@@ -241,7 +236,7 @@ def load_centralized_data_from_fl_list(dataset_name,          # dataset used on 
     
     for clientID in range(numClients):  
 
-        data_path = f"datasets/{dataset_name}/distributions/nclients_{numClients}/alpha_{alpha}/cliente_{clientID}.pkl"
+        data_path = f"datasets/{dataset_name}/distributions/nclients_{numClients}/alpha_{alpha}/client_{clientID}.pkl"
 
         with open(data_path ,"rb") as reader:
             

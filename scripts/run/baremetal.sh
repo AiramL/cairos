@@ -58,7 +58,6 @@ epochs_array=($epochs_list)
 
 echo "Creating distributions"
 [ ! -d "datasets/$dataset/distributions/nclients_$numClients/alpha_$alpha/"  ] && python -m src.data_division.split_data $numClients $dataset $alpha 
-[ ! -d "datasets/$dataset/distributions/nclients_$fixed_n_clients/alpha_$alpha/"  ] && python -m src.data_division.split_data $fixed_n_clients $dataset $alpha
 
 echo "Training the estimator"
 source scripts/run/train_estimator.sh

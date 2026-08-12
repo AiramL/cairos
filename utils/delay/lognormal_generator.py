@@ -10,7 +10,7 @@ def get_lognormal_std(mean, sigma):
 
     return  np.sqrt((np.log(1 + (sigma / mean**2))))
 
-def generate_delay(mean=0.054826, std=0.014477, lower_bound=0.00178, upper_bound=0.219849):
+def generate_delay(mean=0.3, std=0.03, lower_bound=0.01, upper_bound=0.8):
     """
     Generates log-normal distributed data points within specified bounds.
 
@@ -49,5 +49,7 @@ if __name__ == "__main__":
     m = 0.00287
     s = 0.0023
 
-    generate_delay_data = generate_delay(mean=m, std=s)
+    generate_delay_data = generate_delay(mean=m,
+                                         std=s)
+    
     print(generate_delay_data)

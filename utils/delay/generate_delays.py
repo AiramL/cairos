@@ -24,7 +24,9 @@ def generate_lognormal_data(sample_size, mu, sigma, save_path="figures/generated
 
     for _ in range(sample_size):
 
-        data.append(generate_delay(mean=mu, std=sigma))
+        #data.append(generate_delay(mean=mu, std=sigma))
+        data.append(generate_delay())
+
     
     # 2. Ensure the output directory exists
     dir_name = os.path.dirname(save_path)
@@ -78,7 +80,3 @@ if __name__ == "__main__":
         mu=m, 
         sigma=s
     )
-    
-    # (Optional) You can also save the generated data to a CSV if needed:
-    # import pandas as pd
-    # pd.DataFrame({"latency": my_delays}).to_csv("figures/generated_delays.csv", index=False)
