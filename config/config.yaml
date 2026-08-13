@@ -58,7 +58,7 @@ simulation:
                         timeout: 50
                         rounds: 15
                         n_clients_fit: 10
-                        strategy: "fedavg"
+                        strategy: "cairos_pe"
                         epochs_distribution: "equal"
                 client:
                         model: "RESNET10"

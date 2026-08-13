@@ -97,7 +97,7 @@ class FLClient(fl.client.NumPyClient):
         # communication parameters
         self.estimator = EstimatorLSTM()
         self.window_size = 5
-        self.error_tolerance = 1.2
+        self.error_tolerance = 1.1
         self.message_period = 0.1
         self.state = 0
         self.timeout = 0
@@ -207,8 +207,16 @@ class FLClient(fl.client.NumPyClient):
                                                                         state)
             
             if remaining_data:
-                
-                state += 1
+
+                if state + 1 < len(self.throughput):
+
+                    state += 1
+                    
+                else:
+
+                    self.logger.debug(f"state {state} is out of bounds for throughput data, stopping simulation")
+                    state = 0
+                    
                 communication_time += 1
 
         return float(0.1 * (communication_time + time_last_chunk))

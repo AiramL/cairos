@@ -125,6 +125,7 @@ def accuracy_bar_plot_grouped_with_std(file_path="results/clients/flwr/classific
         plt.savefig(filename, dpi=300, bbox_inches='tight')
 
         if PLOT:
+
             plt.show()
 
 if __name__ == "__main__":
@@ -137,9 +138,10 @@ if __name__ == "__main__":
     i_epochs = cfg["simulation"]["federated_learning"]["client"]["epochs"]
     rounds = cfg["simulation"]["federated_learning"]["server"]["rounds"]
     timeout = cfg["simulation"]["federated_learning"]["server"]["timeout"]
+    data_type = cfg["simulation"]["data_type"]
     n_rep = 3
     
-    for data_type in ["delay","throughput"]:
+    for language in ["pt","en"]:
     
         accuracy_bar_plot_grouped_with_std(strategies=[strategy],
                                            dataset=dataset,
@@ -147,4 +149,5 @@ if __name__ == "__main__":
                                            i_epochs=i_epochs,
                                            n_rep=n_rep,
                                            data_type=data_type,
-                                           execution=[5,10,20,50])
+                                           execution=[5,10,20,50],
+                                           language=language)

@@ -97,9 +97,9 @@ class FLClient(fl.client.NumPyClient):
         # communication parameters
         self.estimator = EstimatorLSTM()
         self.window_size = 5
-        self.error_tolerance = 1.2
+        self.error_tolerance = 1.1
         self.message_period = 0.1
-        self.estimation_frequency = 10 
+        self.estimation_frequency = 40 
         self.state = 0
         self.timeout = 0
         self.max_timeout = max_timeout
@@ -210,14 +210,14 @@ class FLClient(fl.client.NumPyClient):
         self.estimated_past_delays.appendleft(estimated_delay)
 
         maximum_chunk_size = floor(self.estimation_frequency * 
-                                   1000 * 
+                                   1024 * 
                                    estimated_delay *
                                    self.message_period)
 
         self.logger.debug(f'verifying if there is remaning data, max chunck: {maximum_chunk_size}, data: {data}')
         if (maximum_chunk_size >= data):
 
-            time_last_chunk = data/(1000 * 
+            time_last_chunk = data/(1024 * 
                                     self.estimation_frequency *
                                     self.message_period *
                                     estimated_delay)
@@ -241,11 +241,20 @@ class FLClient(fl.client.NumPyClient):
                                                                         state)
             
             if remaining_data:
-                
-                state += 1
+            
+                if state + 1 < len(self.throughput):
+
+
+                    state += 1
+                    
+                else:
+
+                    self.logger.debug(f"state {state} is out of bounds for throughput data, stopping simulation")
+                    state = 0
+                    
                 communication_time += 1
 
-        return float(self.message_period * (communication_time + time_last_chunk))
+        return float((self.message_period * communication_time) + time_last_chunk)
 
     
     # estimate the delay 
@@ -268,7 +277,7 @@ class FLClient(fl.client.NumPyClient):
                 
                 communication_time += 1
 
-        return float(self.message_period * self.estimation_frequency * (communication_time + time_last_chunk))
+        return float((self.message_period * self.estimation_frequency * communication_time) + time_last_chunk)
     
     def update_global_epoch(self):
 

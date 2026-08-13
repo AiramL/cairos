@@ -35,7 +35,7 @@ do
 for alpha_dirichlet in 0.5 5.0;
 do
 
-for data_type in "delay";
+for data_type in "throughput";
 do
 
 for speed_id in $speed_ids;
